@@ -24,5 +24,13 @@ fun HomePage(navController: NavHostController) {
         Button(onClick = { navController.navigate(Destination.SETTINGS.route) }) {
             Text("Go to Settings")
         }
+
+        Button(onClick = { navController.navigate(Destination.BOOKROOM.route) }) {
+            Text("Go to Room Booking")
+        }
+
+        Button(onClick = { navController.navigate(Destination.SEARCHPEOPLE.route) }) {
+            Text("Go to Searching for people")
+        }
     }
 }
