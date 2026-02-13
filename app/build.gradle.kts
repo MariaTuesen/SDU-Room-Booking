@@ -55,6 +55,10 @@ dependencies {
     implementation(libs.androidx.ui)
     implementation("androidx.navigation:navigation-compose:2.7.3")
     implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
+
+    implementation("androidx.compose.material3:material3:1.2.0")
+    implementation("androidx.compose.material:material-icons-extended:1.5.0")
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

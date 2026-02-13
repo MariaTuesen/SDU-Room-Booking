@@ -12,6 +12,8 @@ import com.example.sduroombooking.pages.CreateAccount
 import com.example.sduroombooking.pages.HomePage
 import com.example.sduroombooking.pages.LoginScreen
 import com.example.sduroombooking.pages.Settings
+import com.example.sduroombooking.bars.HeaderBar
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -32,11 +34,13 @@ fun AppNavHost() {
 
         // Login Screen
         composable(Destination.LOGIN.route) {
+            HeaderBar()
             LoginScreen(navController)
         }
 
         // Create Account Screen
         composable(Destination.CREATEACCOUNT.route) {
+            HeaderBar()
             CreateAccount(navController)
         }
 
