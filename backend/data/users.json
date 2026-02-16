@@ -1,7 +1,9 @@
 [
   {
+    "id": "cef496db-f122-4712-ab40-f3186ff28856",
     "fullName": "Test",
-    "email": "test@sdu.dk",
-    "password": "123"
+    "email": "test@student.sdu.dk",
+    "password": "123",
+    "profile_picture": null
   }
 ]

@@ -43,12 +43,12 @@ class UserViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 val user = RetrofitClient.api.login(LoginRequest(email, password))
-
                 currentUser.value = user
                 onSuccess()
-
+            } catch (e: retrofit2.HttpException) {
+                onError("Invalid credentials")
             } catch (e: Exception) {
-                onError("Login failed: ${e.message}")
+                onError("Network error: ${e.message}")
             }
         }
     }
