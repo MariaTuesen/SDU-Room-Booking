@@ -27,6 +27,7 @@ fun LoginScreen(navController: NavHostController, userVM: UserViewModel = viewMo
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     val context = LocalContext.current
+    var errorMessage by remember { mutableStateOf<String?>(null) }
 
     Box(
         modifier = Modifier.fillMaxSize(),
@@ -77,12 +78,26 @@ fun LoginScreen(navController: NavHostController, userVM: UserViewModel = viewMo
 
             Spacer(modifier = Modifier.height(24.dp))
 
+            if (errorMessage != null) {
+                Text(
+                    text = errorMessage!!,
+                    color = Color.Red,
+                    fontSize = 14.sp,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+            }
+
             // Login button
             Button(
                 onClick = {
                     userVM.login(email, password,
-                        onSuccess = { navController.navigate(Destination.HOME.route) },
-                        onError = { msg -> Toast.makeText(context, msg, Toast.LENGTH_SHORT).show() }
+                        onSuccess = {
+                            errorMessage = null
+                            navController.navigate(Destination.HOME.route)
+                        },
+                        onError = { msg ->
+                            errorMessage = msg
+                        }
                     )
                 },
                 shape = RoundedCornerShape(14.dp),
@@ -94,7 +109,7 @@ fun LoginScreen(navController: NavHostController, userVM: UserViewModel = viewMo
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Sign up text
+            //not a user text
             Row {
                 Text("Not a user? ", fontFamily = AlatsiFont, color = Color.Black)
 

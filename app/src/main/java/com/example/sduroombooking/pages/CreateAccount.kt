@@ -34,6 +34,8 @@ fun CreateAccount(navController: NavHostController, userVM: UserViewModel = view
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
     val context = LocalContext.current
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+
 
     Box(modifier = Modifier.fillMaxSize()) {
 
@@ -124,15 +126,32 @@ fun CreateAccount(navController: NavHostController, userVM: UserViewModel = view
 
             Spacer(modifier = Modifier.height(24.dp))
 
+            if (errorMessage != null) {
+                Text(
+                    text = errorMessage!!,
+                    color = Color.Red,
+                    fontSize = 14.sp,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+            }
+
             Button(
                 onClick = {
-                    if (password != confirmPassword) {
-                        Toast.makeText(context, "Passwords do not match", Toast.LENGTH_SHORT).show()
+                    if (!email.endsWith("@student.sdu.dk")) {
+                        errorMessage = "Only SDU student emails allowed"
                         return@Button
                     }
+
+                    if (password != confirmPassword) {
+                        errorMessage = "Passwords do not match"
+                        return@Button
+                    }
+
+                    errorMessage = null
+
                     userVM.signup(fullName, email, password,
                         onSuccess = { navController.navigate(Destination.HOME.route) },
-                        onError = { msg -> Toast.makeText(context, msg, Toast.LENGTH_SHORT).show() }
+                        onError = { msg -> errorMessage = msg } // show backend error in red
                     )
                 },
                 shape = RoundedCornerShape(14.dp),
