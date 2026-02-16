@@ -1,35 +1,17 @@
 package com.example.sduroombooking.viewmodel
 
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.Dispatchers
+import com.example.sduroombooking.apisetup.RetrofitClient
+import com.example.sduroombooking.dataclasses.LoginRequest
+import com.example.sduroombooking.dataclasses.User
+import com.example.sduroombooking.dataclasses.UserCreate
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import retrofit2.Response
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.http.Body
-import retrofit2.http.POST
-import org.json.JSONObject
 
-// --- Retrofit API ---
-interface AuthService {
-    @POST("auth/signup")
-    suspend fun signup(@Body user: Map<String, String>): Response<Map<String, String>>
-
-    @POST("auth/login")
-    suspend fun login(@Body credentials: Map<String, String>): Response<Map<String, Any>>
-}
-
-// --- ViewModel ---
 class UserViewModel : ViewModel() {
 
-    private val retrofit = Retrofit.Builder()
-        .baseUrl("http://10.0.2.2:3000/")
-        .addConverterFactory(GsonConverterFactory.create())
-        .build()
-
-    private val authService = retrofit.create(AuthService::class.java)
+    var currentUser = mutableStateOf<User?>(null)
 
     fun signup(
         fullName: String,
@@ -38,28 +20,16 @@ class UserViewModel : ViewModel() {
         onSuccess: () -> Unit,
         onError: (String) -> Unit
     ) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             try {
-                val userMap = mapOf(
-                    "fullName" to fullName,
-                    "email" to email,
-                    "password" to password
-                )
-                val response = authService.signup(userMap)
-                withContext(Dispatchers.Main) {
-                    if (response.isSuccessful) {
-                        onSuccess()
-                    } else {
-                        val msg = response.errorBody()?.string()?.let {
-                            try { JSONObject(it).getString("message") } catch(e: Exception){ it }
-                        } ?: "Error creating account"
-                        onError(msg)
-                    }
-                }
+                val user = UserCreate(fullName, email, password)
+                val createdUser = RetrofitClient.api.signup(user)
+
+                currentUser.value = createdUser
+                onSuccess()
+
             } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    onError("Network error: ${e.message}")
-                }
+                onError("Signup failed: ${e.message}")
             }
         }
     }
@@ -70,24 +40,15 @@ class UserViewModel : ViewModel() {
         onSuccess: () -> Unit,
         onError: (String) -> Unit
     ) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             try {
-                val credentials = mapOf("email" to email, "password" to password)
-                val response = authService.login(credentials)
-                withContext(Dispatchers.Main) {
-                    if (response.isSuccessful) {
-                        onSuccess()
-                    } else {
-                        val msg = response.errorBody()?.string()?.let {
-                            try { JSONObject(it).getString("message") } catch(e: Exception){ it }
-                        } ?: "Invalid credentials"
-                        onError(msg)
-                    }
-                }
+                val user = RetrofitClient.api.login(LoginRequest(email, password))
+
+                currentUser.value = user
+                onSuccess()
+
             } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    onError("Network error: ${e.message}")
-                }
+                onError("Login failed: ${e.message}")
             }
         }
     }

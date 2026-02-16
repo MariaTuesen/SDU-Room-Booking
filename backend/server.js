@@ -1,60 +1,57 @@
 const express = require('express');
 const cors = require('cors');
-const fs = require('fs');
 const bodyParser = require('body-parser');
-const path = require('path');
+const { Database } = require('./Database');
+const { v4: uuidv4 } = require('uuid');
 
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-const USERS_FILE = path.join(__dirname, 'data', 'users.json');
+const usersDB = Database.getInstance('users');
 
-// Ensure users.json exists
-if (!fs.existsSync(USERS_FILE)) {
-    fs.writeFileSync(USERS_FILE, '[]');
-}
-
-// --- Signup endpoint ---
+//Create account
 app.post('/auth/signup', (req, res) => {
-    const { fullName, email, password } = req.body;
+    try {
+        const { fullName, email, password } = req.body;
 
-    if (!fullName || !email || !password) {
-        return res.status(400).json({ message: 'Missing fields' });
+        if (!fullName || !email || !password) {
+            return res.status(400).json({ message: 'Missing fields' });
+        }
+
+        if (usersDB.select({ email }).length > 0) {
+            return res.status(400).json({ message: 'User already exists' });
+        }
+
+        const newUser = {
+            id: uuidv4(),
+            fullName,
+            email,
+            password
+        };
+
+        usersDB.insert(newUser);
+
+        return res.status(201).json({
+            message: 'User created successfully',
+            user: newUser
+        });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Server error" });
     }
-
-    let users = JSON.parse(fs.readFileSync(USERS_FILE));
-
-    // Check if user exists
-    if (users.find(u => u.email === email)) {
-        return res.status(400).json({ message: 'User already exists' });
-    }
-
-    users.push({ fullName, email, password });
-    fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
-
-    console.log('User created:', email);
-    res.status(201).json({ message: 'User created successfully' });
 });
 
-// --- Login endpoint ---
+//Login
 app.post('/auth/login', (req, res) => {
     const { email, password } = req.body;
+    if (!email || !password) return res.status(400).json({ message: 'Missing credentials' });
 
-    if (!email || !password) {
-        return res.status(400).json({ message: 'Missing credentials' });
-    }
-
-    const users = JSON.parse(fs.readFileSync(USERS_FILE));
-    const user = users.find(u => u.email === email && u.password === password);
-
+    const user = usersDB.select({ email, password })[0];
     if (!user) return res.status(401).json({ message: 'Invalid credentials' });
 
-    res.json({ message: 'Login successful', fullName: user.fullName, email: user.email });
+    res.json(user);
 });
 
-// --- Start server ---
-const PORT = 3000;
-app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-});
+app.listen(3000, '0.0.0.0', () => console.log('Server running on http://localhost:3000'));
