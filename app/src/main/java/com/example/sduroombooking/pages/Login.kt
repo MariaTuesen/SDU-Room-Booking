@@ -1,5 +1,6 @@
 package com.example.sduroombooking.pages
 
+import android.widget.Toast
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -9,21 +10,23 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
-import com.example.sduroombooking.navigation.Destination
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
+import com.example.sduroombooking.navigation.Destination
 import com.example.sduroombooking.ui.theme.AlatsiFont
 import com.example.sduroombooking.ui.theme.AppGreen
 import com.example.sduroombooking.ui.theme.TextFieldGrey
-
+import com.example.sduroombooking.viewmodel.UserViewModel
 
 @Composable
-fun LoginScreen(navController: NavHostController) {
+fun LoginScreen(navController: NavHostController, userVM: UserViewModel = viewModel()) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    val context = LocalContext.current
 
     Box(
         modifier = Modifier.fillMaxSize(),
@@ -43,11 +46,7 @@ fun LoginScreen(navController: NavHostController) {
                 shape = RoundedCornerShape(14.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .border(
-                        width = 2.dp,
-                        color = AppGreen,
-                        shape = RoundedCornerShape(14.dp)
-                    ),
+                    .border(2.dp, AppGreen, RoundedCornerShape(14.dp)),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = AppGreen,
                     unfocusedBorderColor = AppGreen,
@@ -63,14 +62,11 @@ fun LoginScreen(navController: NavHostController) {
                 value = password,
                 onValueChange = { password = it },
                 placeholder = { Text("Password", fontFamily = AlatsiFont, color = TextFieldGrey) },
+                visualTransformation = PasswordVisualTransformation(),
                 shape = RoundedCornerShape(14.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .border(
-                        width = 2.dp,
-                        color = AppGreen,
-                        shape = RoundedCornerShape(14.dp)
-                    ),
+                    .border(2.dp, AppGreen, RoundedCornerShape(14.dp)),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = AppGreen,
                     unfocusedBorderColor = AppGreen,
@@ -83,19 +79,17 @@ fun LoginScreen(navController: NavHostController) {
 
             // Login button
             Button(
-                onClick = { navController.navigate(Destination.HOME.route) },
+                onClick = {
+                    userVM.login(email, password,
+                        onSuccess = { navController.navigate(Destination.HOME.route) },
+                        onError = { msg -> Toast.makeText(context, msg, Toast.LENGTH_SHORT).show() }
+                    )
+                },
                 shape = RoundedCornerShape(14.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = AppGreen),
-                modifier = Modifier
-                    .width(140.dp)
-                    .height(50.dp)
+                modifier = Modifier.width(140.dp).height(50.dp)
             ) {
-                Text(
-                    "Login",
-                    fontFamily = AlatsiFont,
-                    fontSize = 20.sp,
-                    color = Color.Black
-                )
+                Text("Login", fontFamily = AlatsiFont, fontSize = 20.sp, color = Color.Black)
             }
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -105,21 +99,12 @@ fun LoginScreen(navController: NavHostController) {
                 Text("Not a user? ", fontFamily = AlatsiFont, color = Color.Black)
 
                 Text(
-                    text = "Sign up", fontFamily = AlatsiFont, color = Color.Blue,
-                    modifier = Modifier.clickable {
-                        navController.navigate(Destination.CREATEACCOUNT.route)
-                    }
+                    text = "Sign up",
+                    fontFamily = AlatsiFont,
+                    color = Color.Blue,
+                    modifier = Modifier.clickable { navController.navigate(Destination.CREATEACCOUNT.route) }
                 )
             }
         }
-    }
-}
-
-
-@Preview(showBackground = true)
-@Composable
-fun LoginScreenPreview() {
-    MaterialTheme {
-        LoginScreen(rememberNavController())
     }
 }
