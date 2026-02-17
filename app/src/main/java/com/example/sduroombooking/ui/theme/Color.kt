@@ -12,3 +12,4 @@ val Pink40 = Color(0xFF7D5260)
 
 val AppGreen = Color(0xFF789D4A)
 val TextFieldGrey = Color(0xFFADA9A9)
+val FeatureLabelGrey = Color(0XFF605C5C)
