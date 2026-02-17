@@ -58,7 +58,6 @@ fun BookedRoomCard()
             {
                 //first section made of room number, date and time
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
                 )
                 {
@@ -127,27 +126,25 @@ fun BookedRoomCard()
                     }
                 }
             }
+            //Reporting and edit
+            Column()
+            {
+                Icon(
+                    painter = painterResource(id = R.drawable.edit),
+                    contentDescription = "Edit",
+                    modifier = Modifier.size(14.dp)
+                )
 
-        }
-        //Reporting and edit
-        Column()
-        {
-            Icon(
-                painter = painterResource(id = R.drawable.edit),
-                contentDescription = "Edit",
-                modifier = Modifier.size(14.dp)
-            )
+                Spacer(modifier = Modifier.height(10.dp))
 
-            Spacer(modifier = Modifier.height(10.dp))
-
-            Icon(
-                painter = painterResource(id = R.drawable.report),
-                contentDescription = "Reporting",
-                modifier = Modifier.size(14.dp)
-            )
+                Icon(
+                    painter = painterResource(id = R.drawable.report),
+                    contentDescription = "Reporting",
+                    modifier = Modifier.size(14.dp)
+                )
+            }
         }
     }
-
 }
 
 @Composable
