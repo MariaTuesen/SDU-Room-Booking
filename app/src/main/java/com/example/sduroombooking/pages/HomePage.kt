@@ -21,7 +21,7 @@ fun HomePage(navController: NavHostController) {
         Button(onClick = { navController.navigate(Destination.LOGIN.route) }) {
             Text("Go back to login")
         }
-        Button(onClick = { navController.navigate(Destination.SETTINGS.route) }) {
+        Button(onClick = { navController.navigate(Destination.PROFILE.route) }) {
             Text("Go to Settings")
         }
     }

@@ -19,7 +19,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.sduroombooking.navigation.Destination
 import com.example.sduroombooking.ui.theme.AlatsiFont
@@ -28,7 +27,10 @@ import com.example.sduroombooking.ui.theme.TextFieldGrey
 import com.example.sduroombooking.viewmodel.UserViewModel
 
 @Composable
-fun CreateAccount(navController: NavHostController, userVM: UserViewModel = viewModel()) {
+fun CreateAccount(
+    navController: NavHostController,
+    userVM: UserViewModel
+) {
     var fullName by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -47,7 +49,10 @@ fun CreateAccount(navController: NavHostController, userVM: UserViewModel = view
                 .padding(start = 16.dp, top = 130.dp)
                 .size(40.dp)
         ) {
-            Icon(Icons.Default.ArrowBack, contentDescription = "Back", modifier = Modifier.size(50.dp))
+            Icon(
+                Icons.Default.ArrowBack,
+                contentDescription = "Back",
+                modifier = Modifier.size(50.dp))
         }
 
         // Form
@@ -150,7 +155,7 @@ fun CreateAccount(navController: NavHostController, userVM: UserViewModel = view
                     errorMessage = null
 
                     userVM.signup(fullName, email, password,
-                        onSuccess = { navController.navigate(Destination.HOME.route) },
+                        onSuccess = { navController.navigate(Destination.PROFILE.route) },
                         onError = { msg -> errorMessage = msg } // show backend error in red
                     )
                 },
