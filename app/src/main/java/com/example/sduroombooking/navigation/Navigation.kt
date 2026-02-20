@@ -12,7 +12,7 @@ enum class Destination(
 
 ){
     HOME("home", "Home", "Home"),
-    SETTINGS("settings", "Settings", "Settings"),
+    PROFILE("profile", "Profile", "Profile"),
     LOGIN("login", "Login", "Login"),
     CREATEACCOUNT("createAccount", "CreateAccount", "Create Account")
 }
@@ -21,5 +21,5 @@ enum class NavIcon(
     val icon: ImageVector,
 ){
     HOME(Destination.HOME, Icons.Outlined.Home),
-    SETTINGS(Destination.SETTINGS, Icons.Outlined.Settings),
+    SETTINGS(Destination.PROFILE, Icons.Outlined.Settings),
 }

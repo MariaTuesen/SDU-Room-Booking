@@ -14,7 +14,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.sduroombooking.navigation.Destination
 import com.example.sduroombooking.ui.theme.AlatsiFont
@@ -23,7 +22,10 @@ import com.example.sduroombooking.ui.theme.TextFieldGrey
 import com.example.sduroombooking.viewmodel.UserViewModel
 
 @Composable
-fun LoginScreen(navController: NavHostController, userVM: UserViewModel = viewModel()) {
+fun LoginScreen(
+    navController: NavHostController,
+    userVM: UserViewModel
+) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     val context = LocalContext.current
@@ -93,7 +95,7 @@ fun LoginScreen(navController: NavHostController, userVM: UserViewModel = viewMo
                     userVM.login(email, password,
                         onSuccess = {
                             errorMessage = null
-                            navController.navigate(Destination.HOME.route)
+                            navController.navigate(Destination.PROFILE.route)
                         },
                         onError = { msg ->
                             errorMessage = msg

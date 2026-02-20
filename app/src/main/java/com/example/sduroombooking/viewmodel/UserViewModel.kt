@@ -8,6 +8,11 @@ import com.example.sduroombooking.dataclasses.LoginRequest
 import com.example.sduroombooking.dataclasses.User
 import com.example.sduroombooking.dataclasses.UserCreate
 import kotlinx.coroutines.launch
+import android.content.Context
+import android.net.Uri
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.toRequestBody
 
 class UserViewModel : ViewModel() {
 
@@ -52,4 +57,35 @@ class UserViewModel : ViewModel() {
             }
         }
     }
+
+    fun uploadProfilePicture(
+        context: Context,
+        userId: String,
+        imageUri: Uri
+    ) {
+        viewModelScope.launch {
+            try {
+                val bytes = context.contentResolver
+                    .openInputStream(imageUri)
+                    ?.use { it.readBytes() }
+                    ?: throw Exception("Failed to read image")
+
+                val requestBody = bytes.toRequestBody("image/*".toMediaTypeOrNull())
+
+                val part = MultipartBody.Part.createFormData(
+                    name = "file",
+                    filename = "profile.png",
+                    body = requestBody
+                )
+
+                val updatedUser = RetrofitClient.api.uploadProfilePicture(userId, part)
+
+                currentUser.value = updatedUser
+
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
 }
