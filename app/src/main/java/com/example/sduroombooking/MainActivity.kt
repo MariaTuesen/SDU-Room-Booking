@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -15,6 +16,7 @@ import com.example.sduroombooking.pages.CreateAccount
 import com.example.sduroombooking.pages.HomePage
 import com.example.sduroombooking.pages.LoginScreen
 import com.example.sduroombooking.pages.Profile
+import com.example.sduroombooking.pages.SearchPeoplePage
 import com.example.sduroombooking.viewmodel.UserViewModel
 
 class MainActivity : ComponentActivity() {
@@ -31,14 +33,16 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun AppNavHost() {
     val navController = rememberNavController()
-
     val userVM: UserViewModel = viewModel()
+
+    LaunchedEffect(Unit) {
+        userVM.fetchAllUsers()
+    }
 
     NavHost(
         navController = navController,
         startDestination = Destination.LOGIN.route
     ) {
-
         composable(Destination.LOGIN.route) {
             HeaderBar()
             LoginScreen(navController = navController, userVM = userVM)
@@ -55,6 +59,10 @@ fun AppNavHost() {
 
         composable(Destination.PROFILE.route) {
             Profile(navController = navController, userViewModel = userVM)
+        }
+
+        composable(Destination.SEARCHPEOPLE.route) {
+            SearchPeoplePage(navController = navController, userViewModel = userVM)
         }
     }
 }

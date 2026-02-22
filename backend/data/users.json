@@ -12,5 +12,12 @@
     "email": "matue23@student.sdu.dk",
     "password": "123",
     "profile_picture": "/uploads/MariaTuesen.png"
+  },
+  {
+    "id": "64e8ab86-e9c6-41e5-8572-a4c26266e962",
+    "fullName": "Sofie Bergquist Madsen",
+    "email": "sofim23@student.sdu.dk",
+    "password": "123",
+    "profile_picture": null
   }
 ]

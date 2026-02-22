@@ -14,7 +14,8 @@ enum class Destination(
     HOME("home", "Home", "Home"),
     PROFILE("profile", "Profile", "Profile"),
     LOGIN("login", "Login", "Login"),
-    CREATEACCOUNT("createAccount", "CreateAccount", "Create Account")
+    CREATEACCOUNT("createAccount", "CreateAccount", "Create Account"),
+    SEARCHPEOPLE("searchPeople", "SearchPeople", "Search People")
 }
 enum class NavIcon(
     var destination: Destination,
