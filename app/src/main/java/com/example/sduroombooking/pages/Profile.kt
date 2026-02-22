@@ -11,7 +11,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -21,35 +20,20 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.example.sduroombooking.R
 import com.example.sduroombooking.dataclasses.User
 import com.example.sduroombooking.navigation.Destination
 import com.example.sduroombooking.ui.theme.AlatsiFont
 import com.example.sduroombooking.ui.theme.AppGreen
 import com.example.sduroombooking.viewmodel.UserViewModel
-import androidx.compose.ui.res.painterResource
-import com.example.sduroombooking.R
 
-//Friends, mock data
-data class Friend(
-    val name: String,
-    val email: String
-)
-
-val mockFriends = listOf(
-    Friend("Emma Frinkley", "emfrin25@student.sdu.dk"),
-    Friend("Julie Holm", "juhol25@student.sdu.dk"),
-    Friend("Lucas Andersen", "luand21@student.sdu.dk"),
-    Friend("Maria Tuesen", "matue23@student.sdu.dk"),
-    Friend("Marie Andersen", "maand23@student.sdu.dk")
-)
-
-//Profile page
 @Composable
 fun Profile(
     navController: NavHostController,
@@ -57,8 +41,19 @@ fun Profile(
 ) {
     val context = LocalContext.current
     val user = userViewModel.currentUser.value
+    val friends = userViewModel.friends
 
     var showPopup by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        userViewModel.fetchAllUsers()
+    }
+
+    LaunchedEffect(user?.id) {
+        if (user != null) {
+            userViewModel.fetchFriendsFromBackend()
+        }
+    }
 
     val imagePicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -68,12 +63,17 @@ fun Profile(
         }
     }
 
-    Box {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .statusBarsPadding()
+            .padding(horizontal = 16.dp)
+    ) {
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .statusBarsPadding()
-                .padding(horizontal = 16.dp)
+                .padding(bottom = 90.dp)
         ) {
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -94,13 +94,14 @@ fun Profile(
                     text = "Your friends",
                     style = MaterialTheme.typography.titleLarge.copy(
                         fontFamily = AlatsiFont,
-                        fontSize = 26.sp)
+                        fontSize = 26.sp
+                    )
                 )
 
                 Spacer(modifier = Modifier.width(8.dp))
 
                 IconButton(
-                    onClick = { /* TODO search friends */ },
+                    onClick = { navController.navigate(Destination.SEARCHPEOPLE.route) },
                     modifier = Modifier.size(36.dp)
                 ) {
                     Icon(
@@ -114,50 +115,113 @@ fun Profile(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            LazyColumn(
-                modifier = Modifier.weight(1f)
-            ) {
-                items(mockFriends) { friend ->
-                    FriendItem(friend)
-                    HorizontalDivider()
-                }
-            }
-
-            Button(
-                onClick = {
-                    navController.navigate(Destination.LOGIN.route) {
-                        popUpTo(0)
-                    }
+            FriendsBox(
+                friends = friends,
+                onUnfriend = { friendUser ->
+                    userViewModel.toggleFriend(context, friendUser)
                 },
-                shape = RoundedCornerShape(14.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = AppGreen),
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
-                    .padding(bottom = 24.dp)
-                    .width(140.dp)
-                    .height(50.dp)
-            ) {
-                Text(
-                    "Logout",
-                    fontFamily = AlatsiFont,
-                    fontSize = 20.sp,
-                    color = Color.Black
-                )
-            }
+                modifier = Modifier.height(300.dp)
+            )
+        }
+
+        Button(
+            onClick = {
+                userViewModel.logoutClearUiOnly()
+                navController.navigate(Destination.LOGIN.route) { popUpTo(0) }
+            },
+            shape = RoundedCornerShape(14.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = AppGreen),
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 24.dp)
+                .width(140.dp)
+                .height(50.dp)
+        ) {
+            Text(
+                "Logout",
+                fontFamily = AlatsiFont,
+                fontSize = 20.sp,
+                color = Color.Black
+            )
         }
 
         if (showPopup) {
             SettingsPopup(
                 onDismiss = { showPopup = false },
                 onDeleteAccount = {
-                    showPopup = false
-                    // TODO delete account logic
+                    val currentUser = userViewModel.currentUser.value
+                    if (currentUser == null) {
+                        android.widget.Toast
+                            .makeText(context, "No user logged in", android.widget.Toast.LENGTH_LONG)
+                            .show()
+                        return@SettingsPopup
+                    }
+
+                    userViewModel.deleteAccount(
+                        context = context,
+                        userId = currentUser.id,
+                        onSuccess = {
+                            showPopup = false
+                            navController.navigate(Destination.LOGIN.route) {
+                                popUpTo(0)
+                            }
+                        },
+                        onError = { msg ->
+                            android.util.Log.e("DeleteAccount", msg)
+                            android.widget.Toast
+                                .makeText(context, msg, android.widget.Toast.LENGTH_LONG)
+                                .show()
+                        }
+                    )
                 },
                 onTerms = {
                     showPopup = false
                     // TODO open terms page
                 }
             )
+        }
+    }
+}
+
+@Composable
+fun FriendsBox(
+    friends: List<User>,
+    onUnfriend: (User) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .background(Color(0xFFF2F2F2))
+            .padding(vertical = 4.dp)
+    ) {
+        if (friends.isEmpty()) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "No friends yet. Tap the search icon to add some!",
+                    style = MaterialTheme.typography.bodyMedium.copy(fontFamily = AlatsiFont),
+                    color = Color.DarkGray,
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 8.dp)
+            ) {
+                items(friends, key = { it.id }) { friendUser ->
+                    FriendItem(
+                        user = friendUser,
+                        onUnfriend = { onUnfriend(friendUser) }
+                    )
+                    HorizontalDivider()
+                }
+            }
         }
     }
 }
@@ -201,7 +265,6 @@ fun SettingsPopup(
     }
 }
 
-//Profile header
 @Composable
 fun ProfileHeader(
     user: User?,
@@ -210,9 +273,9 @@ fun ProfileHeader(
 ) {
     val baseUrl = "http://10.0.2.2:3000"
 
-    val imageUrl = user?.profile_picture?.let { path ->
-        if (path.startsWith("http")) path else baseUrl + path
-    }
+    val imageUrl = user?.profile_picture
+        ?.takeIf { it.isNotBlank() }
+        ?.let { if (it.startsWith("http")) it else baseUrl + it }
 
     Row(verticalAlignment = Alignment.CenterVertically) {
 
@@ -224,24 +287,18 @@ fun ProfileHeader(
                 .clickable { onAvatarClick() },
             contentAlignment = Alignment.Center
         ) {
-            if (imageUrl != null) {
-                AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(imageUrl)
-                        .crossfade(true)
-                        .setParameter("ts", System.currentTimeMillis(), memoryCacheKey = null)
-                        .build(),
-                    contentDescription = "Profile",
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop
-                )
-            } else {
-                Icon(
-                    imageVector = Icons.Default.Person,
-                    contentDescription = "Profile",
-                    modifier = Modifier.size(48.dp)
-                )
-            }
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(imageUrl ?: R.drawable.no_profile_image)
+                    .crossfade(true)
+                    .setParameter("ts", System.currentTimeMillis(), memoryCacheKey = null)
+                    .build(),
+                placeholder = painterResource(R.drawable.no_profile_image),
+                error = painterResource(R.drawable.no_profile_image),
+                contentDescription = "Profile",
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop
+            )
         }
 
         Spacer(modifier = Modifier.width(16.dp))
@@ -289,45 +346,75 @@ fun ProfileHeader(
     }
 }
 
-//Friend item
-
 @Composable
-fun FriendItem(friend: Friend) {
+fun FriendItem(
+    user: User,
+    onUnfriend: (() -> Unit)? = null
+) {
+    val baseUrl = "http://10.0.2.2:3000"
+
+    val imageUrl = user.profile_picture
+        ?.takeIf { it.isNotBlank() }
+        ?.let { if (it.startsWith("http")) it else baseUrl + it }
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 12.dp),
+            .padding(vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-
         Box(
             modifier = Modifier
-                .size(48.dp)
+                .size(56.dp)
                 .clip(CircleShape)
                 .background(Color.LightGray),
             contentAlignment = Alignment.Center
         ) {
-            Icon(Icons.Default.Person, contentDescription = null)
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(imageUrl ?: R.drawable.no_profile_image)
+                    .crossfade(true)
+                    .setParameter("ts", System.currentTimeMillis(), memoryCacheKey = null)
+                    .build(),
+                placeholder = painterResource(R.drawable.no_profile_image),
+                error = painterResource(R.drawable.no_profile_image),
+                contentDescription = "Friend picture",
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop
+            )
         }
 
-        Spacer(modifier = Modifier.width(12.dp))
+        Spacer(modifier = Modifier.width(14.dp))
 
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = friend.name,
-                style = MaterialTheme.typography.titleMedium.copy(fontFamily = AlatsiFont)
+                text = user.fullName,
+                style = MaterialTheme.typography.titleLarge.copy(
+                    fontFamily = AlatsiFont,
+                    fontSize = 18.sp
+                )
             )
-
             Text(
-                text = friend.email,
-                style = MaterialTheme.typography.bodySmall.copy(fontFamily = AlatsiFont)
+                text = user.email,
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    fontFamily = AlatsiFont,
+                    fontSize = 13.sp
+                ),
+                color = Color.DarkGray
             )
         }
 
-        Icon(
-            imageVector = Icons.Default.Star,
-            contentDescription = "Favorite",
-            tint = AppGreen
-        )
+        IconButton(
+            onClick = { onUnfriend?.invoke() },
+            enabled = onUnfriend != null,
+            modifier = Modifier.size(40.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Star,
+                contentDescription = "Friend",
+                tint = AppGreen,
+                modifier = Modifier.size(30.dp)
+            )
+        }
     }
 }
