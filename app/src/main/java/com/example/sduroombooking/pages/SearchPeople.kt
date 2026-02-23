@@ -38,7 +38,6 @@ fun SearchPeoplePage(
     userViewModel: UserViewModel
 ) {
     var query by remember { mutableStateOf("") }
-
     val users = userViewModel.allUsers.value
     val loading = userViewModel.usersLoading.value
     val error = userViewModel.usersError.value
@@ -78,7 +77,8 @@ fun SearchPeoplePage(
                 Icon(
                     painter = painterResource(id = R.drawable.back_button),
                     contentDescription = "Back",
-                    tint = Color.Unspecified
+                    tint = Color.Unspecified,
+                    modifier = Modifier.size(40.dp)
                 )
             }
 
@@ -87,6 +87,9 @@ fun SearchPeoplePage(
             OutlinedTextField(
                 value = query,
                 onValueChange = { query = it },
+                textStyle = LocalTextStyle.current.copy(
+                    fontFamily = AlatsiFont
+                ),
                 placeholder = {
                     Text(
                         "Search...",

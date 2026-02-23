@@ -1,6 +1,5 @@
 package com.example.sduroombooking.pages
 
-import android.widget.Toast
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -41,7 +40,6 @@ fun LoginScreen(
             modifier = Modifier.padding(24.dp)
         ) {
 
-            // Email field
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
@@ -60,7 +58,6 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Password field
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
@@ -89,7 +86,6 @@ fun LoginScreen(
                 )
             }
 
-            // Login button
             Button(
                 onClick = {
                     userVM.login(email, password,
@@ -111,14 +107,12 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            //not a user text
             Row {
                 Text("Not a user? ", fontFamily = AlatsiFont, color = Color.Black)
-
                 Text(
                     text = "Sign up",
                     fontFamily = AlatsiFont,
-                    color = Color.Blue,
+                    color = AppGreen,
                     modifier = Modifier.clickable { navController.navigate(Destination.CREATEACCOUNT.route) }
                 )
             }
