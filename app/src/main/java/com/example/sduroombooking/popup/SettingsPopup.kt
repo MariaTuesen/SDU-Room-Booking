@@ -21,8 +21,8 @@ import com.example.sduroombooking.ui.theme.AppGreen
 import com.example.sduroombooking.ui.theme.TextFieldGrey
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.ui.tooling.preview.Preview
 import com.example.sduroombooking.ui.theme.AlatsiFont
+import androidx.compose.foundation.border
 
 @Composable
 fun SettingsPopup(
@@ -41,6 +41,7 @@ fun SettingsPopup(
                 .fillMaxWidth(0.9f)
                 .padding(16.dp)
                 .wrapContentHeight()
+                .border(2.dp, AppGreen, shape)
                 .background(TextFieldGrey, shape)
                 .padding(24.dp),
             contentAlignment = Alignment.Center

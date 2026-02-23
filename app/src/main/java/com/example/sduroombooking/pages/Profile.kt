@@ -2,6 +2,8 @@ package com.example.sduroombooking.pages
 
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -22,18 +24,16 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.sduroombooking.R
 import com.example.sduroombooking.dataclasses.User
 import com.example.sduroombooking.navigation.Destination
+import com.example.sduroombooking.popup.SettingsPopup
 import com.example.sduroombooking.ui.theme.AlatsiFont
 import com.example.sduroombooking.ui.theme.AppGreen
 import com.example.sduroombooking.viewmodel.UserViewModel
-import androidx.activity.result.PickVisualMediaRequest
-import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia
 
 @Composable
 fun Profile(
@@ -69,13 +69,11 @@ fun Profile(
             .statusBarsPadding()
             .padding(horizontal = 16.dp)
     ) {
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(bottom = 90.dp)
         ) {
-
             Spacer(modifier = Modifier.height(16.dp))
 
             ProfileHeader(
@@ -229,45 +227,6 @@ fun FriendsBox(
 }
 
 @Composable
-fun SettingsPopup(
-    onDismiss: () -> Unit,
-    onDeleteAccount: () -> Unit,
-    onTerms: () -> Unit
-) {
-    Dialog(onDismissRequest = onDismiss) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(16.dp))
-                .background(Color.LightGray)
-                .padding(24.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-
-                Button(
-                    onClick = onDeleteAccount,
-                    colors = ButtonDefaults.buttonColors(containerColor = AppGreen),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Text("Delete account", color = Color.Black)
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Button(
-                    onClick = onTerms,
-                    colors = ButtonDefaults.buttonColors(containerColor = AppGreen),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Text("Read terms and conditions", color = Color.Black)
-                }
-            }
-        }
-    }
-}
-
-@Composable
 fun ProfileHeader(
     user: User?,
     onAvatarClick: () -> Unit,
@@ -280,7 +239,6 @@ fun ProfileHeader(
         ?.let { if (it.startsWith("http")) it else baseUrl + it }
 
     Row(verticalAlignment = Alignment.CenterVertically) {
-
         Box(
             modifier = Modifier
                 .size(150.dp)
@@ -306,7 +264,6 @@ fun ProfileHeader(
         Spacer(modifier = Modifier.width(16.dp))
 
         Column(modifier = Modifier.weight(1f)) {
-
             val displayName = user?.fullName
                 ?.trim()
                 ?.split(" ")
