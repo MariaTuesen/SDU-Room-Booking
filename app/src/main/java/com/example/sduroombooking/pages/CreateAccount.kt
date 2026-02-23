@@ -1,12 +1,9 @@
 package com.example.sduroombooking.pages
 
-import android.widget.Toast
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -15,16 +12,21 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.example.sduroombooking.R
 import com.example.sduroombooking.navigation.Destination
 import com.example.sduroombooking.ui.theme.AlatsiFont
 import com.example.sduroombooking.ui.theme.AppGreen
 import com.example.sduroombooking.ui.theme.TextFieldGrey
 import com.example.sduroombooking.viewmodel.UserViewModel
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.ui.semantics.Role
 
 @Composable
 fun CreateAccount(
@@ -37,7 +39,7 @@ fun CreateAccount(
     var confirmPassword by remember { mutableStateOf("") }
     val context = LocalContext.current
     var errorMessage by remember { mutableStateOf<String?>(null) }
-
+    var acceptedTerms by remember { mutableStateOf(false) }
 
     Box(modifier = Modifier.fillMaxSize()) {
 
@@ -50,12 +52,13 @@ fun CreateAccount(
                 .size(40.dp)
         ) {
             Icon(
-                Icons.Default.ArrowBack,
+                painter = painterResource(id = R.drawable.back_button),
                 contentDescription = "Back",
-                modifier = Modifier.size(50.dp))
+                tint = Color.Unspecified,
+                modifier = Modifier.size(50.dp)
+            )
         }
 
-        // Form
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
@@ -129,19 +132,51 @@ fun CreateAccount(
                 )
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            if (errorMessage != null) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .toggleable(
+                        value = acceptedTerms,
+                        role = Role.Checkbox,
+                        onValueChange = { acceptedTerms = it }
+                    )
+                    .padding(vertical = 8.dp)
+            ) {
+                Checkbox(
+                    checked = acceptedTerms,
+                    onCheckedChange = null,
+                    colors = CheckboxDefaults.colors(
+                        checkedColor = AppGreen,
+                        checkmarkColor = Color.Black,
+                        uncheckedColor = AppGreen
+                    )
+                )
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                Text(text = "I accept the ", fontFamily= AlatsiFont)
                 Text(
-                    text = errorMessage!!,
-                    color = Color.Red,
-                    fontSize = 14.sp,
-                    modifier = Modifier.padding(bottom = 8.dp)
+                    text = "terms and conditions",
+                    fontFamily= AlatsiFont,
+                    color = AppGreen,
+                    modifier = Modifier.clickable {
+                        navController.navigate(Destination.TERMSANDCONDITIONS.route)
+                    }
                 )
             }
 
+            Spacer(modifier = Modifier.height(16.dp))
+
             Button(
+                enabled = acceptedTerms,
                 onClick = {
+                    if (!acceptedTerms) {
+                        errorMessage = "You must accept the terms and conditions"
+                        return@Button
+                    }
                     if (!email.endsWith("@student.sdu.dk")) {
                         errorMessage = "Only SDU student emails allowed"
                         return@Button
@@ -156,7 +191,7 @@ fun CreateAccount(
 
                     userVM.signup(fullName, email, password,
                         onSuccess = { navController.navigate(Destination.PROFILE.route) },
-                        onError = { msg -> errorMessage = msg } // show backend error in red
+                        onError = { msg -> errorMessage = msg }
                     )
                 },
                 shape = RoundedCornerShape(14.dp),
@@ -164,6 +199,15 @@ fun CreateAccount(
                 modifier = Modifier.fillMaxWidth().height(50.dp)
             ) {
                 Text("Create account", fontFamily = AlatsiFont, fontSize = 20.sp, color = Color.Black)
+            }
+
+            if (errorMessage != null) {
+                Text(
+                    text = errorMessage!!,
+                    color = Color.Red,
+                    fontSize = 14.sp,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
             }
         }
     }

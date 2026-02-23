@@ -17,9 +17,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.unit.dp
-import com.example.sduroombooking.ui.theme.AlatsiFont
 import com.example.sduroombooking.ui.theme.AppGreen
 import com.example.sduroombooking.ui.theme.TextFieldGrey
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.ui.tooling.preview.Preview
+import com.example.sduroombooking.ui.theme.AlatsiFont
 
 @Composable
 fun SettingsPopup(
@@ -31,48 +34,36 @@ fun SettingsPopup(
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false)
     ) {
-
         val shape = RoundedCornerShape(16.dp)
-        val borderWidth = 2.dp
 
-            Box(
-                modifier = Modifier
-                    .padding(borderWidth)
-                    .background(TextFieldGrey, shape)
-                    .padding(24.dp),
-                contentAlignment = Alignment.Center
-            ) {
-
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally
+        Box(
+            modifier = Modifier
+                .fillMaxWidth(0.9f)
+                .padding(16.dp)
+                .wrapContentHeight()
+                .background(TextFieldGrey, shape)
+                .padding(24.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Button(
+                    onClick = onDeleteAccount,
+                    colors = ButtonDefaults.buttonColors(containerColor = AppGreen),
+                    shape = RoundedCornerShape(12.dp)
                 ) {
+                    Text("Delete account", color = Color.Black, fontFamily = AlatsiFont)
+                }
 
-                    Button(
-                        onClick = onDeleteAccount,
-                        colors = ButtonDefaults.buttonColors(containerColor = AppGreen),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Text(
-                            "Delete account",
-                            color = Color.Black,
-                            fontFamily = AlatsiFont
-                        )
-                    }
+                Spacer(modifier = Modifier.height(16.dp))
 
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    Button(
-                        onClick = onTerms,
-                        colors = ButtonDefaults.buttonColors(containerColor = AppGreen),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Text(
-                            "Read terms and conditions",
-                            color = Color.Black,
-                            fontFamily = AlatsiFont
-                        )
-                    }
+                Button(
+                    onClick = onTerms,
+                    colors = ButtonDefaults.buttonColors(containerColor = AppGreen),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text("Read terms and conditions", color = Color.Black, fontFamily = AlatsiFont)
                 }
             }
         }
     }
+}

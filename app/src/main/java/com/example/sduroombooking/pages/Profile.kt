@@ -2,7 +2,6 @@ package com.example.sduroombooking.pages
 
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -33,6 +32,8 @@ import com.example.sduroombooking.navigation.Destination
 import com.example.sduroombooking.ui.theme.AlatsiFont
 import com.example.sduroombooking.ui.theme.AppGreen
 import com.example.sduroombooking.viewmodel.UserViewModel
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia
 
 @Composable
 fun Profile(
@@ -42,6 +43,13 @@ fun Profile(
     val context = LocalContext.current
     val user = userViewModel.currentUser.value
     val friends = userViewModel.friends
+    val photoPicker = rememberLauncherForActivityResult(
+        contract = PickVisualMedia()
+    ) { uri: Uri? ->
+        if (uri != null && user != null) {
+            userViewModel.uploadProfilePicture(context, user.id, uri)
+        }
+    }
 
     var showPopup by remember { mutableStateOf(false) }
 
@@ -52,14 +60,6 @@ fun Profile(
     LaunchedEffect(user?.id) {
         if (user != null) {
             userViewModel.fetchFriendsFromBackend()
-        }
-    }
-
-    val imagePicker = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
-    ) { uri: Uri? ->
-        if (uri != null && user != null) {
-            userViewModel.uploadProfilePicture(context, user.id, uri)
         }
     }
 
@@ -80,7 +80,9 @@ fun Profile(
 
             ProfileHeader(
                 user = user,
-                onAvatarClick = { imagePicker.launch("image/*") },
+                onAvatarClick = {
+                    photoPicker.launch(PickVisualMediaRequest(PickVisualMedia.ImageOnly))
+                },
                 onSettingsClick = { showPopup = true }
             )
 
@@ -176,7 +178,7 @@ fun Profile(
                 },
                 onTerms = {
                     showPopup = false
-                    // TODO open terms page
+                    navController.navigate(Destination.TERMSANDCONDITIONS.route)
                 }
             )
         }
