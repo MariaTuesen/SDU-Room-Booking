@@ -1,0 +1,112 @@
+[
+  {
+    "id": "",
+    "name": "Ø28-508-2",
+    "seats": 6,
+    "building": 42,
+    "location": "SDU Odense",
+    "has_monitor": true,
+    "has_whiteboard": false,
+    "is_accessible": true
+  },
+  {
+    "id": "",
+    "name": "Ø28-508a-2",
+    "seats": 6,
+    "building": 42,
+    "location": "SDU Odense",
+    "has_monitor": true,
+    "has_whiteboard": true,
+    "is_accessible": true
+  },
+  {
+    "id": "",
+    "name": "Ø28-508b-2",
+    "seats": 6,
+    "building": 42,
+    "location": "SDU Odense",
+    "has_monitor": true,
+    "has_whiteboard": true,
+    "is_accessible": true
+  },
+  {
+    "id": "",
+    "name": "Ø30-508-2",
+    "seats": 4,
+    "building": 42,
+    "location": "SDU Odense",
+    "has_monitor": true,
+    "has_whiteboard": true,
+    "is_accessible": true
+  },
+  {
+    "id": "",
+    "name": "Ø22-612a-0",
+    "seats": 6,
+    "building": 44,
+    "location": "SDU Odense",
+    "has_monitor": true,
+    "has_whiteboard": true,
+    "is_accessible": true
+  },
+  {
+    "id": "",
+    "name": "Ø22-612b-0",
+    "seats": 6,
+    "building": 42,
+    "location": "SDU Odense",
+    "has_monitor": true,
+    "has_whiteboard": true,
+    "is_accessible": true
+  },
+  {
+    "id": "",
+    "name": "Ø20-612e-0",
+    "seats": 6,
+    "building": 42,
+    "location": "SDU Odense",
+    "has_monitor": true,
+    "has_whiteboard": true,
+    "is_accessible": true
+  },
+  {
+    "id": "",
+    "name": "Ø28-508-2",
+    "seats": 6,
+    "building": 42,
+    "location": "SDU Odense",
+    "has_monitor": true,
+    "has_whiteboard": false,
+    "is_accessible": true
+  },
+  {
+    "id": "",
+    "name": "Ø16-504a-3",
+    "seats": 6,
+    "building": "PAV 2",
+    "location": "SDU Odense",
+    "has_monitor": false,
+    "has_whiteboard": true,
+    "is_accessible": false
+  },
+  {
+    "id": "",
+    "name": "Ø16-505a-3",
+    "seats": 6,
+    "building": "PAV 2",
+    "location": "SDU Odense",
+    "has_monitor": true,
+    "has_whiteboard": true,
+    "is_accessible": false
+  },
+  {
+    "id": "",
+    "name": "Ø16-505d-3",
+    "seats": 6,
+    "building": "PAV 2",
+    "location": "SDU Odense",
+    "has_monitor": false,
+    "has_whiteboard": true,
+    "is_accessible": false
+  }
+]
