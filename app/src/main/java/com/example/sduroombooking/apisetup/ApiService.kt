@@ -3,12 +3,54 @@ package com.example.sduroombooking.apisetup
 import com.example.sduroombooking.dataclasses.LoginRequest
 import com.example.sduroombooking.dataclasses.User
 import com.example.sduroombooking.dataclasses.UserCreate
+import okhttp3.MultipartBody
+import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.DELETE
+import retrofit2.http.GET
+import retrofit2.http.Multipart
 import retrofit2.http.POST
+import retrofit2.http.Part
+import retrofit2.http.Path
+
+data class SignupResponse(
+    val message: String,
+    val user: User
+)
 
 interface ApiService {
+
     @POST("auth/signup")
-    suspend fun signup(@Body user: UserCreate): User
+    suspend fun signup(@Body user: UserCreate): SignupResponse
+
     @POST("auth/login")
     suspend fun login(@Body credentials: LoginRequest): User
+
+    @GET("users")
+    suspend fun getAllUsers(): List<User>
+
+    @Multipart
+    @POST("users/{id}/profile-picture")
+    suspend fun uploadProfilePicture(
+        @Path("id") id: String,
+        @Part file: MultipartBody.Part
+    ): User
+
+    @DELETE("users/{id}")
+    suspend fun deleteUser(@Path("id") id: String): Response<Unit>
+
+    @GET("users/{id}/friends")
+    suspend fun getFriends(@Path("id") id: String): List<User>
+
+    @POST("users/{id}/friends/{friendId}")
+    suspend fun addFriend(
+        @Path("id") id: String,
+        @Path("friendId") friendId: String
+    ): Response<Unit>
+
+    @DELETE("users/{id}/friends/{friendId}")
+    suspend fun removeFriend(
+        @Path("id") id: String,
+        @Path("friendId") friendId: String
+    ): Response<Unit>
 }

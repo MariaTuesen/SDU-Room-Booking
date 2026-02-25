@@ -1,8 +1,22 @@
 [
   {
     "id": "cef496db-f122-4712-ab40-f3186ff28856",
-    "fullName": "Test",
-    "email": "test@student.sdu.dk",
+    "fullName": "Alice Parker",
+    "email": "alpar23@student.sdu.dk",
+    "password": "123",
+    "profile_picture": "/uploads/AliceParker.png"
+  },
+  {
+    "id": "39673d52-c0a1-4b37-8692-2532480157a8",
+    "fullName": "Maria Østergaard Tuesen",
+    "email": "matue23@student.sdu.dk",
+    "password": "123",
+    "profile_picture": "/uploads/MariaTuesen.png"
+  },
+  {
+    "id": "64e8ab86-e9c6-41e5-8572-a4c26266e962",
+    "fullName": "Sofie Bergquist Madsen",
+    "email": "sofim23@student.sdu.dk",
     "password": "123",
     "profile_picture": null
   }

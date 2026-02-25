@@ -8,11 +8,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.sduroombooking.navigation.Destination
-import com.example.sduroombooking.pages.BookRoom
 import com.example.sduroombooking.pages.CreateAccount
 import com.example.sduroombooking.pages.HomePage
 import com.example.sduroombooking.pages.LoginScreen
-import com.example.sduroombooking.pages.SearchPeople
 import com.example.sduroombooking.pages.Settings
 import com.example.sduroombooking.bars.HeaderBar
 
@@ -54,16 +52,6 @@ fun AppNavHost() {
         // Settings Screen
         composable(Destination.SETTINGS.route) {
             Settings(navController)
-        }
-
-        // Book Room Screen
-        composable(Destination.BOOKROOM.route) {
-            BookRoom(navController)
-        }
-
-        // Search People Screen
-        composable(Destination.SEARCHPEOPLE.route) {
-            SearchPeople(navController)
         }
     }
 }
