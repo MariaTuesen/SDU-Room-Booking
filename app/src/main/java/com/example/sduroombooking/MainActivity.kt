@@ -12,14 +12,18 @@ import androidx.core.content.ContextCompat
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.sduroombooking.bars.HeaderBar
+import com.example.sduroombooking.bars.NavigationBar
 import com.example.sduroombooking.navigation.Destination
 import com.example.sduroombooking.pages.CreateAccount
 import com.example.sduroombooking.pages.HomePage
@@ -45,39 +49,60 @@ fun AppNavHost() {
     val navController = rememberNavController()
     val userVM: UserViewModel = viewModel()
 
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+
+
+    val routesWithNavbar = listOf(
+        Destination.HOME.route,
+        Destination.PROFILE.route,
+        Destination.SEARCHPEOPLE.route
+        //add booking
+    )
+
     RequestPermissionsOnFirstLaunch()
 
     LaunchedEffect(Unit) {
         userVM.fetchAllUsers()
     }
-
-    NavHost(
-        navController = navController,
-        startDestination = Destination.LOGIN.route
-    ) {
-        composable(Destination.LOGIN.route) {
-            HeaderBar()
-            LoginScreen(navController = navController, userVM = userVM)
+    Scaffold(
+        bottomBar = {
+            if (currentRoute in routesWithNavbar) {
+                NavigationBar(navController = navController, userViewModel = userVM)
+            }
         }
+    ) { innerPadding ->
+        NavHost(
+            navController = navController,
+            startDestination = Destination.LOGIN.route,
+            modifier = androidx.compose.ui.Modifier.padding(innerPadding)
+        ) {
+            composable(Destination.LOGIN.route) {
+                HeaderBar()
+                LoginScreen(navController = navController, userVM = userVM)
+            }
 
-        composable(Destination.CREATEACCOUNT.route) {
-            HeaderBar()
-            CreateAccount(navController = navController, userVM = userVM)
-        }
+            composable(Destination.CREATEACCOUNT.route) {
+                HeaderBar()
+                CreateAccount(navController = navController, userVM = userVM)
+            }
 
-        composable(Destination.HOME.route) {
-            HomePage(navController = navController)
-        }
+            composable(Destination.HOME.route) {
+                HomePage(navController = navController)
+            }
 
-        composable(Destination.PROFILE.route) {
-            Profile(navController = navController, userViewModel = userVM)
-        }
+            composable(Destination.PROFILE.route) {
+                Profile(navController = navController, userViewModel = userVM)
+            }
 
-        composable(Destination.SEARCHPEOPLE.route) {
-            SearchPeoplePage(navController = navController, userViewModel = userVM)
-        }
-        composable(Destination.TERMSANDCONDITIONS.route) {
-            TermsAndConditions(navController = navController, userViewModel = userVM)
+            composable(Destination.SEARCHPEOPLE.route) {
+                SearchPeoplePage(navController = navController, userViewModel = userVM)
+            }
+            composable(Destination.TERMSANDCONDITIONS.route) {
+                TermsAndConditions(navController = navController, userViewModel = userVM)
+            }
+
+            //add booking page
         }
     }
 }
