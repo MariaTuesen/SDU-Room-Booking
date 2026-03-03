@@ -32,6 +32,7 @@ import com.example.sduroombooking.pages.Profile
 import com.example.sduroombooking.pages.SearchPeoplePage
 import com.example.sduroombooking.pages.TermsAndConditions
 import com.example.sduroombooking.viewmodel.UserViewModel
+import com.example.sduroombooking.pages.CreateBooking
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -56,8 +57,8 @@ fun AppNavHost() {
     val routesWithNavbar = listOf(
         Destination.HOME.route,
         Destination.PROFILE.route,
-        Destination.SEARCHPEOPLE.route
-        //add booking
+        Destination.SEARCHPEOPLE.route,
+        Destination.CREATEBOOKING.route
     )
 
     RequestPermissionsOnFirstLaunch()
@@ -102,7 +103,9 @@ fun AppNavHost() {
                 TermsAndConditions(navController = navController, userViewModel = userVM)
             }
 
-            //add booking page
+            composable(Destination.CREATEBOOKING.route) {
+                CreateBooking(navController = navController, userViewModel = userVM)
+            }
         }
     }
 }

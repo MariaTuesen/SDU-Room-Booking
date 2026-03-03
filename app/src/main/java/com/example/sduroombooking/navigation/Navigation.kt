@@ -16,8 +16,8 @@ enum class Destination(
     LOGIN("login", "Login", "Login"),
     CREATEACCOUNT("createAccount", "CreateAccount", "Create Account"),
     SEARCHPEOPLE("searchPeople", "SearchPeople", "Search People"),
-    TERMSANDCONDITIONS("termsAndConditions", "TermsAndConditions", "Terms and Conditions")
-}
+    TERMSANDCONDITIONS("termsAndConditions", "TermsAndConditions", "Terms and Conditions"),
+    CREATEBOOKING("createBooking", "CreateBooking", "Create booking")}
 enum class NavIcon(
     var destination: Destination,
     val icon: ImageVector,

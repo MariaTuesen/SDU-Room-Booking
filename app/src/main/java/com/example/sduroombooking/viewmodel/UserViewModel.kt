@@ -26,6 +26,9 @@ class UserViewModel : ViewModel() {
 
     private val _friends = mutableStateListOf<User>()
     val friends: List<User> get() = _friends
+    var allRooms = mutableStateOf<List<com.example.sduroombooking.dataclasses.Room>>(emptyList())
+    var roomsLoading = mutableStateOf(false)
+    var roomsError = mutableStateOf<String?>(null)
 
     fun signup(
         fullName: String,
@@ -186,6 +189,50 @@ class UserViewModel : ViewModel() {
             } catch (e: Exception) {
                 onError(e.message ?: "Unknown error")
             }
+        }
+    }
+    fun fetchRooms() {
+        viewModelScope.launch {
+            roomsLoading.value = true
+            roomsError.value = null
+            try {
+                val rooms = RetrofitClient.api.getRooms()
+                allRooms.value = rooms
+            } catch (e: Exception) {
+                roomsError.value = "Failed to fetch rooms: ${e.message}"
+            } finally {
+                roomsLoading.value = false
+            }
+        }
+    }
+    fun UserViewModel.searchUsers(
+        query: String,
+        users: List<User>,
+        currentUserId: String?,
+        excludeIds: Set<String> = emptySet(),
+        friendFirst: Boolean = false
+    ): List<User> {
+        val q = query.trim().lowercase()
+
+        fun User.matchesQuery(): Boolean {
+            if (q.isBlank()) return true
+            return fullName.lowercase().contains(q) || email.lowercase().contains(q)
+        }
+
+        val base = users
+            .asSequence()
+            .filter { it.id != currentUserId }
+            .filter { it.id !in excludeIds }
+            .filter { it.matchesQuery() }
+            .toList()
+
+        return if (!friendFirst) {
+            base
+        } else {
+            base.sortedWith(
+                compareByDescending<User> { isFriend(it.id) }
+                    .thenBy { it.fullName.lowercase() }
+            )
         }
     }
 }

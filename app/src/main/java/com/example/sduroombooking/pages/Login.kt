@@ -91,7 +91,7 @@ fun LoginScreen(
                     userVM.login(email, password,
                         onSuccess = {
                             errorMessage = null
-                            navController.navigate(Destination.PROFILE.route)
+                            navController.navigate(Destination.CREATEBOOKING.route)
                         },
                         onError = { msg ->
                             errorMessage = msg

@@ -186,6 +186,30 @@ app.get("/users/:id/friends", async (req, res) => {
     console.error(err);
     return res.status(500).json({ message: "Failed to get friends" });
   }
+
+});
+app.get("/rooms", (req, res) => {
+  try {
+    const roomsFilePath = path.join(__dirname, "data", "rooms.json");
+
+    if (!fs.existsSync(roomsFilePath)) {
+      return res.status(404).json({ message: "rooms.json not found" });
+    }
+
+    const raw = fs.readFileSync(roomsFilePath, "utf8");
+    const rooms = JSON.parse(raw);
+
+    const normalized = (rooms || []).map(r => ({
+      ...r,
+      id: r.id || "",
+      building: String(r.building),
+    }));
+
+    return res.json(normalized);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Failed to load rooms" });
+  }
 });
 
 app.post("/users/:id/friends/:friendId", async (req, res) => {

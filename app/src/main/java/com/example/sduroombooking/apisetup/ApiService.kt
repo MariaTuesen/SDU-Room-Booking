@@ -3,6 +3,7 @@ package com.example.sduroombooking.apisetup
 import com.example.sduroombooking.dataclasses.LoginRequest
 import com.example.sduroombooking.dataclasses.User
 import com.example.sduroombooking.dataclasses.UserCreate
+import com.example.sduroombooking.dataclasses.Room
 import okhttp3.MultipartBody
 import retrofit2.Response
 import retrofit2.http.Body
@@ -53,4 +54,7 @@ interface ApiService {
         @Path("id") id: String,
         @Path("friendId") friendId: String
     ): Response<Unit>
+
+    @GET("rooms")
+    suspend fun getRooms(): List<Room>
 }
