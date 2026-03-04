@@ -33,6 +33,7 @@ import com.example.sduroombooking.navigation.Destination
 import com.example.sduroombooking.popup.SettingsPopup
 import com.example.sduroombooking.ui.theme.AlatsiFont
 import com.example.sduroombooking.ui.theme.AppGreen
+import com.example.sduroombooking.ui.theme.TextFieldGrey
 import com.example.sduroombooking.viewmodel.UserViewModel
 
 @Composable
@@ -193,7 +194,7 @@ fun FriendsBox(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
-            .background(Color(0xFFF2F2F2))
+            .background(TextFieldGrey)
             .padding(vertical = 4.dp)
     ) {
         if (friends.isEmpty()) {
