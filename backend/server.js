@@ -8,6 +8,7 @@ const multer = require('multer');
 const fs = require('fs');
 
 const { readFriendsFile, writeFriendsFile, uniq } = require('./models/FriendsStore');
+const { readBookingsFile, writeBookingsFile, hasConflict } = require('./models/BookingsStore');
 
 const app = express();
 app.use(cors());
@@ -186,6 +187,30 @@ app.get("/users/:id/friends", async (req, res) => {
     console.error(err);
     return res.status(500).json({ message: "Failed to get friends" });
   }
+
+});
+app.get("/rooms", (req, res) => {
+  try {
+    const roomsFilePath = path.join(__dirname, "data", "rooms.json");
+
+    if (!fs.existsSync(roomsFilePath)) {
+      return res.status(404).json({ message: "rooms.json not found" });
+    }
+
+    const raw = fs.readFileSync(roomsFilePath, "utf8");
+    const rooms = JSON.parse(raw);
+
+    const normalized = (rooms || []).map(r => ({
+      ...r,
+      id: r.id || "",
+      building: String(r.building),
+    }));
+
+    return res.json(normalized);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Failed to load rooms" });
+  }
 });
 
 app.post("/users/:id/friends/:friendId", async (req, res) => {
@@ -256,6 +281,57 @@ app.delete('/users/:id', async (req, res) => {
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: err.message || 'Failed to delete user' });
+  }
+});
+
+app.get('/bookings', (req, res) => {
+  try {
+    const { date, roomId } = req.query;
+    const bookings = readBookingsFile();
+
+    const filtered = bookings.filter(b => {
+      if (date && b.date !== date) return false;
+      if (roomId && String(b.roomId) !== String(roomId)) return false;
+      return true;
+    });
+
+    return res.json(filtered);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Failed to fetch bookings' });
+  }
+});
+
+app.post('/bookings', (req, res) => {
+  try {
+    const { roomId, date, startTime, endTime, userIds } = req.body;
+    if (roomId == null || !date || !startTime || !endTime) {
+      return res.status(400).json({ message: 'Missing fields' });
+    }
+
+    const bookings = readBookingsFile();
+
+    if (hasConflict(bookings, roomId, date, startTime, endTime)) {
+      return res.status(409).json({ message: 'Room is already booked in that timeframe' });
+    }
+
+    const newBooking = {
+      id: uuidv4(),
+      roomId: Number(roomId),
+      date,
+      startTime,
+      endTime,
+      userIds: Array.isArray(userIds) ? [...new Set(userIds)] : [], // unique + safe
+      createdAt: new Date().toISOString()
+    };
+
+    bookings.push(newBooking);
+    writeBookingsFile(bookings);
+
+    return res.status(201).json(newBooking);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Failed to create booking' });
   }
 });
 

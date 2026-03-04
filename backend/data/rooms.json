@@ -1,6 +1,16 @@
 [
   {
-    "id": "",
+    "id": 1,
+    "name": "TESTER",
+    "seats": 10,
+    "building": 60,
+    "location": "SDU Kolding",
+    "has_monitor": true,
+    "has_whiteboard": false,
+    "is_accessible": true
+  },
+  {
+    "id": 2,
     "name": "Ø28-508-2",
     "seats": 6,
     "building": 42,
@@ -10,7 +20,7 @@
     "is_accessible": true
   },
   {
-    "id": "",
+    "id": 3,
     "name": "Ø28-508a-2",
     "seats": 6,
     "building": 42,
@@ -20,7 +30,7 @@
     "is_accessible": true
   },
   {
-    "id": "",
+    "id": 4,
     "name": "Ø28-508b-2",
     "seats": 6,
     "building": 42,
@@ -30,7 +40,7 @@
     "is_accessible": true
   },
   {
-    "id": "",
+    "id": 5,
     "name": "Ø30-508-2",
     "seats": 4,
     "building": 42,
@@ -40,7 +50,7 @@
     "is_accessible": true
   },
   {
-    "id": "",
+    "id": 6,
     "name": "Ø22-612a-0",
     "seats": 6,
     "building": 44,
@@ -50,7 +60,7 @@
     "is_accessible": true
   },
   {
-    "id": "",
+    "id": 7,
     "name": "Ø22-612b-0",
     "seats": 6,
     "building": 42,
@@ -60,7 +70,7 @@
     "is_accessible": true
   },
   {
-    "id": "",
+    "id": 8,
     "name": "Ø20-612e-0",
     "seats": 6,
     "building": 42,
@@ -70,7 +80,7 @@
     "is_accessible": true
   },
   {
-    "id": "",
+    "id": 9,
     "name": "Ø28-508-2",
     "seats": 6,
     "building": 42,
@@ -80,7 +90,7 @@
     "is_accessible": true
   },
   {
-    "id": "",
+    "id": 10,
     "name": "Ø16-504a-3",
     "seats": 6,
     "building": "PAV 2",
@@ -90,7 +100,7 @@
     "is_accessible": false
   },
   {
-    "id": "",
+    "id": 11,
     "name": "Ø16-505a-3",
     "seats": 6,
     "building": "PAV 2",
@@ -100,7 +110,7 @@
     "is_accessible": false
   },
   {
-    "id": "",
+    "id": 12,
     "name": "Ø16-505d-3",
     "seats": 6,
     "building": "PAV 2",
