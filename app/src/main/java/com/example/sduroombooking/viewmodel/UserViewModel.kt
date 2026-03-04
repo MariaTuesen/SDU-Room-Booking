@@ -15,6 +15,8 @@ import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import retrofit2.HttpException
+import com.example.sduroombooking.dataclasses.Booking
+import com.example.sduroombooking.dataclasses.CreateBookingRequest
 
 class UserViewModel : ViewModel() {
 
@@ -29,6 +31,9 @@ class UserViewModel : ViewModel() {
     var allRooms = mutableStateOf<List<com.example.sduroombooking.dataclasses.Room>>(emptyList())
     var roomsLoading = mutableStateOf(false)
     var roomsError = mutableStateOf<String?>(null)
+    var bookingsForSelectedDate = mutableStateOf<List<Booking>>(emptyList())
+    var bookingsLoading = mutableStateOf(false)
+    var bookingsError = mutableStateOf<String?>(null)
 
     fun signup(
         fullName: String,
@@ -233,6 +238,58 @@ class UserViewModel : ViewModel() {
                 compareByDescending<User> { isFriend(it.id) }
                     .thenBy { it.fullName.lowercase() }
             )
+        }
+    }
+    fun fetchBookingsForDate(date: String) {
+        viewModelScope.launch {
+            bookingsLoading.value = true
+            bookingsError.value = null
+            try {
+                bookingsForSelectedDate.value = RetrofitClient.api.getBookings(date = date)
+            } catch (e: Exception) {
+                bookingsError.value = "Failed to fetch bookings: ${e.message}"
+                bookingsForSelectedDate.value = emptyList()
+            } finally {
+                bookingsLoading.value = false
+            }
+        }
+    }
+
+    fun createBooking(
+        roomId: Int,
+        date: String,
+        startTime: String,
+        endTime: String,
+        selectedOtherUserIds: List<String>,
+        onSuccess: (Booking) -> Unit,
+        onError: (String) -> Unit
+    ) {
+        val me = currentUser.value
+        if (me == null) {
+            onError("You must be logged in to book")
+            return
+        }
+
+        val allUserIds = (listOf(me.id) + selectedOtherUserIds).distinct()
+
+        viewModelScope.launch {
+            try {
+                val booking = RetrofitClient.api.createBooking(
+                    CreateBookingRequest(
+                        roomId = roomId,
+                        date = date,
+                        startTime = startTime,
+                        endTime = endTime,
+                        userIds = allUserIds
+                    )
+                )
+                onSuccess(booking)
+            } catch (e: retrofit2.HttpException) {
+                if (e.code() == 409) onError("Room is already booked in that timeframe")
+                else onError("Booking failed (HTTP ${e.code()})")
+            } catch (e: Exception) {
+                onError("Booking failed: ${e.message}")
+            }
         }
     }
 }

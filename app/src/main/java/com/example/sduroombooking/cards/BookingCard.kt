@@ -2,6 +2,7 @@ package com.example.sduroombooking.cards
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -15,7 +16,8 @@ import androidx.compose.ui.unit.dp
 import com.example.sduroombooking.R
 
 data class BookingCardUiModel(
-    val roomId: String,
+    val roomDbId: Int,
+    val roomName: String,
     val building: String,
     val dateText: String,
     val timeText: String,
@@ -33,121 +35,18 @@ fun BookingCard(
     onBook: () -> Unit,
     onMissingDateTime: () -> Unit
 ) {
+    val chipScroll = rememberScrollState()
+
     Surface(
         shape = RoundedCornerShape(18.dp),
-        tonalElevation = 0.dp,
-        shadowElevation = 0.dp,
         border = BorderStroke(3.dp, borderColor),
         modifier = Modifier.fillMaxWidth()
     ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
-            verticalAlignment = Alignment.CenterVertically
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
         ) {
-
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(end = 12.dp)
-            ) {
-
-                // Room name
-                Text(
-                    text = model.roomId,
-                    style = MaterialTheme.typography.titleLarge.copy(
-                        fontWeight = FontWeight.Black
-                    ),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-
-                Spacer(Modifier.height(6.dp))
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(24.dp)
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            painter = painterResource(R.drawable.calendar),
-                            contentDescription = "Calendar",
-                            tint = Color.Unspecified,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(Modifier.width(6.dp))
-                        Text(
-                            text = model.dateText,
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                fontWeight = FontWeight.Black
-                            )
-                        )
-                    }
-
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            painter = painterResource(R.drawable.clock),
-                            contentDescription = "Clock",
-                            tint = Color.Unspecified,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(Modifier.width(6.dp))
-                        Text(
-                            text = model.timeText,
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                fontWeight = FontWeight.Black
-                            )
-                        )
-                    }
-                }
-
-                Spacer(Modifier.height(4.dp))
-
-                Text(
-                    text = model.building,
-                    style = MaterialTheme.typography.titleSmall.copy(
-                        fontWeight = FontWeight.Bold
-                    ),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-
-                Spacer(Modifier.height(10.dp))
-
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(10.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-
-                    AssistChip(
-                        onClick = {},
-                        label = { Text(model.seatsText) }
-                    )
-
-                    if (model.hasMonitor) {
-                        AssistChip(
-                            onClick = {},
-                            label = { Text("TV screen") }
-                        )
-                    }
-
-                    if (model.hasWhiteboard) {
-                        AssistChip(
-                            onClick = {},
-                            label = { Text("Whiteboard") }
-                        )
-                    }
-
-                    if (model.isAccessible) {
-                        Spacer(Modifier.width(4.dp))
-                        Icon(
-                            painter = painterResource(R.drawable.wheelchair),
-                            contentDescription = "Accessible",
-                            tint = Color.Unspecified,
-                            modifier = Modifier.size(30.dp)
-                        )
-                    }
-                }
-            }
 
             Button(
                 onClick = { if (canBook) onBook() else onMissingDateTime() },
@@ -160,19 +59,128 @@ fun BookingCard(
                     disabledContentColor = Color.Black.copy(alpha = 0.7f)
                 ),
                 modifier = Modifier
-                    .height(64.dp)
-                    .widthIn(min = 120.dp)
+                    .align(Alignment.TopEnd)
+                    .height(48.dp)
             ) {
                 Text(
                     text = "Book",
-                    style = MaterialTheme.typography.headlineSmall.copy(
+                    style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.Black
                     )
                 )
             }
+
+            Column(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(end = 100.dp)
+                ) {
+                    Text(
+                        text = model.roomName,
+                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Black),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+
+                    Spacer(Modifier.height(6.dp))
+
+                    Text(
+                        text = model.building,
+                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+
+                    Spacer(Modifier.height(6.dp))
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp) // was 24.dp
+                    ) {
+                        Text(
+                            text = model.dateText,
+                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Black)
+                        )
+
+                        Text(
+                            text = model.timeText,
+                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Black)
+                        )
+                    }
+                }
+
+                Spacer(Modifier.height(10.dp))
+
+                androidx.compose.foundation.lazy.LazyRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    contentPadding = PaddingValues(end = 16.dp) // prevents last item clipping
+                ) {
+                    item {
+                        AssistChip(
+                            onClick = {},
+                            label = {
+                                Text(
+                                    model.seatsText,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
+                        )
+                    }
+
+                    if (model.hasMonitor) {
+                        item {
+                            AssistChip(
+                                onClick = {},
+                                label = {
+                                    Text(
+                                        "TV screen",
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                }
+                            )
+                        }
+                    }
+
+                    if (model.hasWhiteboard) {
+                        item {
+                            AssistChip(
+                                onClick = {},
+                                label = {
+                                    Text(
+                                        "Whiteboard",
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                }
+                            )
+                        }
+                    }
+
+                    if (model.isAccessible) {
+                        item {
+                            Icon(
+                                painter = painterResource(R.drawable.wheelchair),
+                                contentDescription = "Accessible",
+                                tint = Color.Unspecified,
+                                modifier = Modifier
+                                    .size(26.dp)
+                                    .padding(start = 4.dp)
+                                    .offset(y = 11.dp)
+                            )
+                        }
+                    }
+                }
+            }
         }
     }
 }
+
 @Composable
 @androidx.compose.ui.tooling.preview.Preview(
     name = "Booking Card Preview",
@@ -182,13 +190,14 @@ fun BookingCard(
 private fun BookingCardPreview() {
     BookingCard(
         model = BookingCardUiModel(
-            roomId = "ØI4-504a-3",
+            roomDbId = 1,
+            roomName = "ØI4-504a-3",
             building = "MMMI, SDU Odense",
             dateText = "22/2/26",
             timeText = "12-14",
             seatsText = "5 seats",
             hasMonitor = true,
-            hasWhiteboard = false,
+            hasWhiteboard = true,
             isAccessible = true
         ),
         borderColor = Color(0xFF7A9C4E),

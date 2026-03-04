@@ -13,6 +13,9 @@ import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.Part
 import retrofit2.http.Path
+import com.example.sduroombooking.dataclasses.Booking
+import com.example.sduroombooking.dataclasses.CreateBookingRequest
+import retrofit2.http.Query
 
 data class SignupResponse(
     val message: String,
@@ -57,4 +60,13 @@ interface ApiService {
 
     @GET("rooms")
     suspend fun getRooms(): List<Room>
+
+    @GET("bookings")
+    suspend fun getBookings(
+        @Query("date") date: String? = null,
+        @Query("roomId") roomId: Int? = null
+    ): List<Booking>
+
+    @POST("bookings")
+    suspend fun createBooking(@Body req: CreateBookingRequest): Booking
 }

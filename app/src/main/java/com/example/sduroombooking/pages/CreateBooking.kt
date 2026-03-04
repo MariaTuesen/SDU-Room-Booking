@@ -76,6 +76,10 @@ fun CreateBooking(navController: NavController, userViewModel: UserViewModel) {
         userViewModel.fetchRooms()
     }
 
+    LaunchedEffect(selectedDate, startTime, endTime) {
+        selectedDate?.let { userViewModel.fetchBookingsForDate(it) }
+    }
+
     val friendsSnapshot = remember(userViewModel.friends) { userViewModel.friends.toList() }
 
     val candidatePeople by remember(
@@ -118,7 +122,7 @@ fun CreateBooking(navController: NavController, userViewModel: UserViewModel) {
     val rooms = userViewModel.allRooms.value
 
     val locationsFromJson: List<String> = remember(rooms) {
-        rooms.mapNotNull { r -> r.location?.toString()?.trim() }
+        rooms.map { r -> r.location.trim() }
             .filter { it.isNotBlank() }
             .distinct()
             .sorted()
@@ -130,7 +134,7 @@ fun CreateBooking(navController: NavController, userViewModel: UserViewModel) {
     val buildingsFromJson: List<String> = remember(rooms, location) {
         val wanted = location.trim()
         rooms.asSequence()
-            .filter { r -> r.location?.toString()?.trim()?.equals(wanted, ignoreCase = true) == true }
+            .filter { r -> r.location.trim().equals(wanted, ignoreCase = true) }
             .map { it.buildingDisplay() }
             .filter { it.isNotBlank() }
             .distinct()
@@ -412,7 +416,7 @@ fun CreateBooking(navController: NavController, userViewModel: UserViewModel) {
                         expanded = locationExpanded,
                         onDismissRequest = { locationExpanded = false }
                     ) {
-                        locationsFromJson.forEach { option: String ->
+                        locationsFromJson.forEach { option ->
                             DropdownMenuItem(
                                 text = { Text(option) },
                                 onClick = {
@@ -448,7 +452,7 @@ fun CreateBooking(navController: NavController, userViewModel: UserViewModel) {
                         expanded = buildingExpanded,
                         onDismissRequest = { buildingExpanded = false }
                     ) {
-                        buildingsFromJson.forEach { option: String ->
+                        buildingsFromJson.forEach { option ->
                             DropdownMenuItem(
                                 text = { Text(option) },
                                 onClick = {
@@ -475,7 +479,7 @@ fun CreateBooking(navController: NavController, userViewModel: UserViewModel) {
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    extrasFromJson.forEach { extra: ExtraOption ->
+                    extrasFromJson.forEach { extra ->
                         BookingExtraChip(
                             text = extra.label,
                             selected = extra.key in selectedExtras,
@@ -506,8 +510,7 @@ fun CreateBooking(navController: NavController, userViewModel: UserViewModel) {
                         val selectedExtraOptions = extrasFromJson.filter { it.key in selectedExtras }
 
                         filteredRooms = all.filter { r ->
-                            val locationOk =
-                                r.location?.toString()?.trim()?.equals(wantedLocation, ignoreCase = true) == true
+                            val locationOk = r.location.trim().equals(wantedLocation, ignoreCase = true)
                             val buildingOk = r.buildingDisplay().equals(wantedBuilding, ignoreCase = true)
                             val seatsOk = r.seats >= requiredSeats
                             val extrasOk = selectedExtraOptions.all { opt -> opt.isInRoom(r) }
@@ -532,33 +535,71 @@ fun CreateBooking(navController: NavController, userViewModel: UserViewModel) {
         }
 
         if (searchedOnce) {
-            items(
-                filteredRooms,
-                key = { room -> "${room.name}_${room.location}_${room.buildingDisplay()}" }
-            ) { room ->
-                val model = BookingCardUiModel(
-                    roomId = room.name,
-                    building = "${room.buildingDisplay()}, ${room.location?.toString()?.trim().orEmpty()}",
-                    dateText = selectedDate ?: "",
-                    timeText = "${startTime ?: ""}-${endTime ?: ""}",
-                    seatsText = "${room.seats} seats",
-                    hasMonitor = room.has_monitor,
-                    hasWhiteboard = room.has_whiteboard,
-                    isAccessible = room.is_accessible
-                )
+            val bookingsToday = userViewModel.bookingsForSelectedDate.value
 
-                BookingCard(
-                    model = model,
-                    borderColor = AppGreen,
-                    canBook = canBook,
-                    onBook = {
-                        // TODO: navigate / create booking
-                        // navController.navigate(...)
-                    },
-                    onMissingDateTime = {
-                        Toast.makeText(context, "Please select date and time first", Toast.LENGTH_SHORT).show()
+            val availableRooms = filteredRooms.filter { room ->
+                if (selectedDate == null || startTime == null || endTime == null) {
+                    true
+                } else {
+                    bookingsToday.none { b ->
+                        b.roomId == room.id &&
+                                b.date == selectedDate &&
+                                overlaps(startTime!!, endTime!!, b.startTime, b.endTime)
                     }
-                )
+                }
+            }
+
+            if (availableRooms.isEmpty()) {
+                item {
+                    Text(
+                        text = "No available rooms for that time",
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(top = 12.dp)
+                    )
+                }
+            } else {
+                items(
+                    availableRooms,
+                    key = { room -> room.id }
+                ) { room ->
+                    val model = BookingCardUiModel(
+                        roomDbId = room.id,
+                        roomName = room.name,
+                        building = "${room.buildingDisplay()}, ${room.location.trim()}",
+                        dateText = selectedDate ?: "",
+                        timeText = "${startTime ?: ""}-${endTime ?: ""}",
+                        seatsText = "${room.seats} seats",
+                        hasMonitor = room.has_monitor,
+                        hasWhiteboard = room.has_whiteboard,
+                        isAccessible = room.is_accessible
+                    )
+
+                    BookingCard(
+                        model = model,
+                        borderColor = AppGreen,
+                        canBook = canBook,
+                        onBook = {
+                            userViewModel.createBooking(
+                                roomId = room.id,
+                                date = selectedDate!!,
+                                startTime = startTime!!,
+                                endTime = endTime!!,
+                                selectedOtherUserIds = selectedPeople.map { it.id },
+                                onSuccess = {
+                                    Toast.makeText(context, "Booked!", Toast.LENGTH_SHORT).show()
+                                    userViewModel.fetchBookingsForDate(selectedDate!!)
+                                },
+                                onError = { msg ->
+                                    Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                                    userViewModel.fetchBookingsForDate(selectedDate!!)
+                                }
+                            )
+                        },
+                        onMissingDateTime = {
+                            Toast.makeText(context, "Please select date and time first", Toast.LENGTH_SHORT).show()
+                        }
+                    )
+                }
             }
         }
     }
@@ -714,11 +755,19 @@ private fun BookingPersonItemUser(
     }
 }
 
-private fun Room.buildingDisplay(): String {
-    val b = this.building
-    return when (b) {
-        is Int -> b.toString()
-        is String -> b.trim()
-        else -> b?.toString()?.trim().orEmpty()
-    }
+private fun Room.buildingDisplay(): String = this.building.trim()
+
+private fun timeToMinutes(hhmm: String): Int {
+    val parts = hhmm.split(":")
+    val h = parts.getOrNull(0)?.toIntOrNull() ?: 0
+    val m = parts.getOrNull(1)?.toIntOrNull() ?: 0
+    return h * 60 + m
+}
+
+private fun overlaps(startA: String, endA: String, startB: String, endB: String): Boolean {
+    val a1 = timeToMinutes(startA)
+    val a2 = timeToMinutes(endA)
+    val b1 = timeToMinutes(startB)
+    val b2 = timeToMinutes(endB)
+    return a1 < b2 && a2 > b1
 }
