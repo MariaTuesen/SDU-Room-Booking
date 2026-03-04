@@ -98,7 +98,7 @@ fun BookingCard(
 
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp) // was 24.dp
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
                             text = model.dateText,
@@ -117,7 +117,7 @@ fun BookingCard(
                 androidx.compose.foundation.lazy.LazyRow(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
-                    contentPadding = PaddingValues(end = 16.dp) // prevents last item clipping
+                    contentPadding = PaddingValues(end = 16.dp)
                 ) {
                     item {
                         AssistChip(
