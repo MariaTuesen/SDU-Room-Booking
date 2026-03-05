@@ -21,7 +21,6 @@ import com.example.sduroombooking.viewmodel.UserViewModel
 @Composable
 fun HomePage(navController: NavHostController) {
 
-    //midlertidig liste mængde
     val myBookings = List(5) { it }
 
     Column(

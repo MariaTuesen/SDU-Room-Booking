@@ -38,6 +38,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.sduroombooking.popup.StatusButton
 import com.example.sduroombooking.ui.theme.AppGreen
 import com.example.sduroombooking.ui.theme.TextFieldGrey
 import kotlinx.serialization.internal.InlinePrimitiveDescriptor
@@ -49,88 +50,39 @@ fun BookedRoomCard()
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(4.dp),
-        shape = RoundedCornerShape(12.dp),
+            .padding(8.dp),
+        shape = RoundedCornerShape(15.dp),
         border = BorderStroke(2.dp, AppGreen),
         colors = CardDefaults.cardColors(TextFieldGrey)
-    )
-    {
-        Row(
-            modifier = Modifier
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        )
+    ) {
+        Column(modifier = Modifier.padding(10.dp))
         {
-            //Booking information
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.Center
-            )
+            Row(modifier = Modifier.fillMaxWidth())
             {
-                //first section made of room number, date and time
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                )
+                Column(modifier = Modifier.weight(1f))
                 {
-                    Text(
-                        text = "Ø14-504a-3",
-                        fontSize = 15.sp,
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically)
+                    {
+                        Text(text = "Ø14-504a-3", fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Icon(Icons.Default.CalendarMonth, null, modifier = Modifier.size(24.dp))
+                        Text(text = " 22/2/26 ", fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                        Icon(Icons.Default.WatchLater, null, modifier = Modifier.size(24.dp))
+                        Text(text = " 12-14", fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                    }
+                    Spacer(modifier = Modifier.height(5.dp))
 
-                    Spacer(modifier = Modifier.width(12.dp))
-
-                    Icon(
-                        imageVector = Icons.Default.CalendarMonth,
-                        contentDescription = "Dato",
-                        modifier = Modifier.size(14.dp)
-                    )
-
-                    Spacer(modifier = Modifier.width(5.dp))
-
-                    Text(
-                        text = "22/02/26",
-                        fontSize = 15.sp,
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold
-                    )
-
-
-                    Spacer(modifier = Modifier.width(12.dp))
-
-                    Icon(
-                        imageVector = Icons.Default.WatchLater,
-                        contentDescription = "Time",
-                        modifier = Modifier.size(14.dp)
-                    )
-
-                    Spacer(modifier = Modifier.width(5.dp))
-
-                    Text(
-                        text = "12-14",
-                        fontSize = 15.sp,
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold
-                    )
+                    Text(text = "MMMI, SDU Odense", fontSize = 10.sp, fontWeight = FontWeight.Medium)
                 }
-
-                Text(
-                    text = "MMMI, SDU Odense",
-                    fontSize = 10.sp,
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold
+                //Edit
+                Icon(
+                    imageVector = Icons.Default.Edit,
+                    contentDescription = "Time",
+                    modifier = Modifier.size(30.dp)
                 )
-
+                }
             }
-            //Edit
-            Icon(
-                imageVector = Icons.Default.Edit,
-                contentDescription = "Time",
-                modifier = Modifier.size(30.dp)
-            )
-        }
+
     }
 }
 
