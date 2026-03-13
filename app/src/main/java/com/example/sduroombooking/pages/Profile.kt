@@ -294,13 +294,27 @@ fun ProfileHeader(
 
             Spacer(modifier = Modifier.height(4.dp))
 
-            IconButton(onClick = onSettingsClick, modifier = Modifier.offset(x = (-12).dp)) {
-                Icon(
-                    painter = painterResource(id = R.drawable.setting),
-                    contentDescription = "Settings",
-                    modifier = Modifier.size(24.dp),
-                    tint = Color.Unspecified
-                )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.offset(x = (-12).dp)
+            ) {
+                IconButton(onClick = onSettingsClick) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.setting),
+                        contentDescription = "Settings",
+                        modifier = Modifier.size(24.dp),
+                        tint = Color.Unspecified
+                    )
+                }
+                IconButton(onClick = { /* handle notifications */ }) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.notification),
+                        contentDescription = "Notifications",
+                        modifier = Modifier.size(24.dp),
+                        tint = Color.Unspecified
+                    )
+
+                }
             }
         }
     }
