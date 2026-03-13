@@ -12,7 +12,11 @@ import androidx.core.content.ContextCompat
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -67,16 +71,16 @@ fun AppNavHost() {
         userVM.fetchAllUsers()
     }
     Scaffold(
+        contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom),
         bottomBar = {
             if (currentRoute in routesWithNavbar) {
                 NavigationBar(navController = navController, userViewModel = userVM)
             }
         }
-    ) { innerPadding ->
+    ) { _ ->
         NavHost(
             navController = navController,
-            startDestination = Destination.LOGIN.route,
-            modifier = androidx.compose.ui.Modifier.padding(innerPadding)
+            startDestination = Destination.LOGIN.route
         ) {
             composable(Destination.LOGIN.route) {
                 HeaderBar()
