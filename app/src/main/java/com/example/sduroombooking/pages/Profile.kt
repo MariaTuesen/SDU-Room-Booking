@@ -352,7 +352,7 @@ fun ProfileHeader(
                             modifier = Modifier
                                 .size(8.dp)
                                 .align(Alignment.TopEnd)
-                                .offset(x = (-8).dp, y = 8.dp)
+                                .offset(x = (-10).dp, y = 10.dp)
                                 .background(AppGreen, CircleShape)
                         )
                     }
