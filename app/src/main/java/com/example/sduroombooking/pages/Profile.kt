@@ -30,6 +30,7 @@ import coil.request.ImageRequest
 import com.example.sduroombooking.R
 import com.example.sduroombooking.dataclasses.User
 import com.example.sduroombooking.navigation.Destination
+import com.example.sduroombooking.popup.NotificationsPopup
 import com.example.sduroombooking.popup.SettingsPopup
 import com.example.sduroombooking.ui.theme.AlatsiFont
 import com.example.sduroombooking.ui.theme.AppGreen
@@ -44,6 +45,9 @@ fun Profile(
     val context = LocalContext.current
     val user = userViewModel.currentUser.value
     val friends = userViewModel.friends
+    val hasUnreadNotifications =
+        userViewModel.notifications.value.any { !it.read }
+
     val photoPicker = rememberLauncherForActivityResult(
         contract = PickVisualMedia()
     ) { uri: Uri? ->
@@ -53,6 +57,7 @@ fun Profile(
     }
 
     var showPopup by remember { mutableStateOf(false) }
+    var showNotificationsPopup by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         userViewModel.fetchAllUsers()
@@ -61,6 +66,7 @@ fun Profile(
     LaunchedEffect(user?.id) {
         if (user != null) {
             userViewModel.fetchFriendsFromBackend()
+            userViewModel.fetchNotifications()
         }
     }
 
@@ -79,10 +85,14 @@ fun Profile(
 
             ProfileHeader(
                 user = user,
+                hasUnreadNotifications = hasUnreadNotifications,
                 onAvatarClick = {
                     photoPicker.launch(PickVisualMediaRequest(PickVisualMedia.ImageOnly))
                 },
-                onSettingsClick = { showPopup = true }
+                onSettingsClick = { showPopup = true },
+                onNotificationsClick = {
+                    showNotificationsPopup = true
+                }
             )
 
             Spacer(modifier = Modifier.height(32.dp))
@@ -181,6 +191,24 @@ fun Profile(
                 }
             )
         }
+
+        if (showNotificationsPopup) {
+            NotificationsPopup(
+                notifications = userViewModel.notifications.value,
+                loading = userViewModel.notificationsLoading.value,
+                error = userViewModel.notificationsError.value,
+                onDismiss = {
+                    userViewModel.notifications.value
+                        .filter { !it.read }
+                        .forEach { notification ->
+                            userViewModel.markNotificationAsRead(notification.id)
+                        }
+
+                    showNotificationsPopup = false
+                },
+                onNotificationClick = { }
+            )
+        }
     }
 }
 
@@ -230,8 +258,10 @@ fun FriendsBox(
 @Composable
 fun ProfileHeader(
     user: User?,
+    hasUnreadNotifications: Boolean,
     onAvatarClick: () -> Unit,
-    onSettingsClick: () -> Unit
+    onSettingsClick: () -> Unit,
+    onNotificationsClick: () -> Unit
 ) {
     val baseUrl = "http://10.0.2.2:3000"
 
@@ -306,14 +336,26 @@ fun ProfileHeader(
                         tint = Color.Unspecified
                     )
                 }
-                IconButton(onClick = { /* handle notifications */ }) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.notification),
-                        contentDescription = "Notifications",
-                        modifier = Modifier.size(24.dp),
-                        tint = Color.Unspecified
-                    )
 
+                Box {
+                    IconButton(onClick = onNotificationsClick) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.notification),
+                            contentDescription = "Notifications",
+                            modifier = Modifier.size(24.dp),
+                            tint = Color.Unspecified
+                        )
+                    }
+
+                    if (hasUnreadNotifications) {
+                        Box(
+                            modifier = Modifier
+                                .size(8.dp)
+                                .align(Alignment.TopEnd)
+                                .offset(x = (-8).dp, y = 8.dp)
+                                .background(AppGreen, CircleShape)
+                        )
+                    }
                 }
             }
         }
