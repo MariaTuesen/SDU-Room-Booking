@@ -79,8 +79,7 @@ fun NavigationBar(navController: NavHostController, userViewModel: UserViewModel
         )
         {
             Row(
-                modifier = Modifier
-                    .fillMaxSize(),
+                modifier = Modifier.fillMaxSize(),
                 horizontalArrangement = Arrangement.SpaceAround,
                 verticalAlignment = Alignment.CenterVertically
             )
@@ -88,8 +87,8 @@ fun NavigationBar(navController: NavHostController, userViewModel: UserViewModel
                 val isHome = currentRoute == Destination.HOME.route
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center,
                     modifier = Modifier
+                        .width(60.dp)
                         .clickable(enabled = !isHome)
                         {
                             navController.navigate(Destination.HOME.route)
@@ -108,6 +107,8 @@ fun NavigationBar(navController: NavHostController, userViewModel: UserViewModel
                             .size(6.dp)
                             .background(Black, CircleShape)
                         )
+                    } else {
+                        Spacer(modifier = Modifier.size(6.dp))
                     }
                 }
 
@@ -141,24 +142,26 @@ fun NavigationBar(navController: NavHostController, userViewModel: UserViewModel
                             modifier = Modifier.fillMaxSize(),
                             contentScale = ContentScale.Crop
                         )
-                        if (isProfile) {
-                            Box(
-                                modifier = Modifier
-                                    .size(6.dp)
-                                    .background(Black, CircleShape)
-                            )
-                        }
+                    }
+                    if (isProfile) {
+                        Box(
+                            modifier = Modifier
+                                .size(6.dp)
+                                .background(Black, CircleShape)
+                        )
+                    }else{
+                        Spacer(modifier = Modifier.size(6.dp))
                     }
                 }
             }
         }
 
-        val isBooking = currentRoute == Destination.HOME.route
+        val isBooking = currentRoute == Destination.CREATEBOOKING.route
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
-                .offset(y = (-20).dp)
-                .clickable{navController.navigate(Destination.HOME.route)}
+                .offset(y = (-15).dp)
+                .clickable{navController.navigate(Destination.CREATEBOOKING.route)}
         )
         {
             Box(
@@ -173,7 +176,8 @@ fun NavigationBar(navController: NavHostController, userViewModel: UserViewModel
                     contentDescription = "AddButton",
                     modifier = Modifier
                         .size(65.dp)
-                        .border(3.dp, Black, CircleShape),
+                        .border(3.dp, Black, CircleShape)
+                        .padding(4.dp),
                 )
             }
             if (isBooking)
@@ -183,6 +187,8 @@ fun NavigationBar(navController: NavHostController, userViewModel: UserViewModel
                     .size(6.dp)
                     .background(Black, CircleShape)
                 )
+            } else{
+                Spacer(modifier = Modifier.height(10.dp))
             }
         }
     }
