@@ -17,46 +17,77 @@ import com.example.sduroombooking.bars.NavigationBar
 import com.example.sduroombooking.cards.BookedRoomCard
 import com.example.sduroombooking.navigation.Destination
 import com.example.sduroombooking.viewmodel.UserViewModel
+import java.lang.reflect.Executable
 
 @Composable
-fun HomePage(navController: NavHostController) {
+fun HomePage(navController: NavHostController, userVM: UserViewModel)
+{
+    val rooms by userVM.allRooms
+    val currentUser = userVM.currentUser.value
 
-    val myBookings = List(5) { it }
+    var filteredBookings by remember{
+        mutableStateOf<List<com.example.sduroombooking.dataclasses.Booking>>(
+            emptyList()
+        )
+    }
 
-    Column(
-        modifier = Modifier
+    var showPopup by remember { mutableStateOf(false) }
+    var selectedBooking by remember { mutableStateOf<com.example.sduroombooking.dataclasses.Booking?>(null) }
+
+    LaunchedEffect(Unit)
+    {
+        userVM.fetchRooms()
+
+        try {
+            val allBookings = com.example.sduroombooking.apisetup.RetrofitClient.api.getBookings()
+            if (currentUser != null) {
+                filteredBookings = allBookings.filter { it.userIds.contains(currentUser.id) }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    Box(modifier = Modifier.fillMaxSize())
+    {
+        Column(modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
-    ) {
-        Text(
-            text = "Your bookings",
-            fontSize = 25.sp,
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(5.dp),
-            contentPadding = PaddingValues(bottom = 5.dp)
-        )
+            .padding(16.dp))
         {
-            items(myBookings) {
-                booking ->
-                BookedRoomCard()
+            Text(
+                text = "Your bookings",
+                fontSize = 25.sp,
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            if (filteredBookings.isEmpty())
+            {
+                Text("No bookings found.", modifier = Modifier.padding(8.dp))
+            } else
+            {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                    contentPadding = PaddingValues(bottom = 80.dp)
+                )
+                {
+                    items(filteredBookings) { booking ->
+                        val room = rooms.find { it.id == booking.roomId }
+                        BookedRoomCard(
+                            booking = booking,
+                            room = room,
+                            onEditClick = {
+                                selectedBooking = booking
+                                showPopup = true
+                            })
+                    }
+                }
             }
         }
 
     }
 }
 
-
-@Preview(showBackground = true)
-@Composable
-fun HomePagePreview() {
-    val navController = rememberNavController()
-    HomePage(
-        navController = navController
-    )
-}

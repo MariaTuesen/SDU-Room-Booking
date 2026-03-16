@@ -69,4 +69,13 @@ interface ApiService {
 
     @POST("bookings")
     suspend fun createBooking(@Body req: CreateBookingRequest): Booking
+
+    @DELETE("bookings/{id}")
+    suspend fun deleteBooking(@Path("id") id: String): Response<Unit>
+
+    @POST("bookings/{id}")
+    suspend fun updateBooking(
+        @Path("id") id: String,
+        @Body booking: Booking
+    ): Booking
 }

@@ -5,6 +5,7 @@ import android.text.style.BackgroundColorSpan
 import android.webkit.WebSettings
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import com.example.sduroombooking.R
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -45,53 +46,70 @@ import kotlinx.serialization.internal.InlinePrimitiveDescriptor
 
 
 @Composable
-fun BookedRoomCard()
+fun BookedRoomCard(
+    booking: com.example.sduroombooking.dataclasses.Booking,
+    room: com.example.sduroombooking.dataclasses.Room?,
+    onEditClick: ()-> Unit
+)
 {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp),
+            .padding(vertical = 4.dp, horizontal = 8.dp),
         shape = RoundedCornerShape(15.dp),
         border = BorderStroke(2.dp, AppGreen),
         colors = CardDefaults.cardColors(TextFieldGrey)
     ) {
         Column(modifier = Modifier.padding(10.dp))
         {
-            Row(modifier = Modifier.fillMaxWidth())
+            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically)
             {
                 Column(modifier = Modifier.weight(1f))
                 {
                     Row(verticalAlignment = Alignment.CenterVertically)
                     {
-                        Text(text = "Ø14-504a-3", fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                        Text(
+                            text = room?.name ?: "Room#${booking.roomId}",
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+
                         Spacer(modifier = Modifier.width(8.dp))
-                        Icon(Icons.Default.CalendarMonth, null, modifier = Modifier.size(24.dp))
-                        Text(text = " 22/2/26 ", fontSize = 15.sp, fontWeight = FontWeight.Bold)
+
+                        Icon(Icons.Default.CalendarMonth, null, modifier = Modifier.size(20.dp))
+
+                        Text(
+                            text = " ${booking.date} ",
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+
                         Icon(Icons.Default.WatchLater, null, modifier = Modifier.size(24.dp))
-                        Text(text = " 12-14", fontSize = 15.sp, fontWeight = FontWeight.Bold)
+
+                        Text(
+                            text = " ${booking.startTime} - ${booking.endTime}",
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold
+                        )
                     }
                     Spacer(modifier = Modifier.height(5.dp))
 
-                    Text(text = "MMMI, SDU Odense", fontSize = 10.sp, fontWeight = FontWeight.Medium)
+                    Text(
+                        text = room?.let { "${it.building}, ${it.location}" } ?: " ",
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Medium
+                    )
                 }
                 //Edit
                 Icon(
                     imageVector = Icons.Default.Edit,
                     contentDescription = "Time",
-                    modifier = Modifier.size(30.dp)
+                    modifier = Modifier
+                        .size(30.dp)
+                        .clickable { onEditClick() }
                 )
                 }
             }
 
     }
-}
-
-
-
-
-
-@Preview()
-@Composable
-fun BookedRoomCardPreview() {
-    BookedRoomCard()
 }

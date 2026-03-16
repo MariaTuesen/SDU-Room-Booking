@@ -292,4 +292,42 @@ class UserViewModel : ViewModel() {
             }
         }
     }
+
+    fun deleteBooking(
+        bookingId: String,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        viewModelScope.launch {
+            try {
+                val response = RetrofitClient.api.deleteBooking(bookingId)
+                if (response.isSuccessful) {
+                    onSuccess()
+                } else {
+                    onError("it wasn't possible to cancel booking (HTTP ${response.code()})")
+                }
+            } catch (e: Exception) {
+                onError("Cancellation failed: ${e.message}")
+            }
+        }
+    }
+
+    fun updateBookingParticipants(
+        booking: Booking,
+        newUSerIds: List<String>,
+        onSuccess: () -> Unit
+    )
+    {
+        viewModelScope.launch {
+            try {
+                val updatedBooking = booking.copy(userIds = newUSerIds)
+
+                RetrofitClient.api.updateBooking(booking.id, updatedBooking)
+
+                onSuccess()
+            } catch (e: Exception){
+                e.printStackTrace()
+            }
+        }
+    }
 }
