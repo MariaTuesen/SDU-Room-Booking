@@ -16,6 +16,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.sduroombooking.bars.NavigationBar
 import com.example.sduroombooking.cards.BookedRoomCard
 import com.example.sduroombooking.navigation.Destination
+import com.example.sduroombooking.popup.EditBookingPopUp
 import com.example.sduroombooking.viewmodel.UserViewModel
 import java.lang.reflect.Executable
 
@@ -65,7 +66,8 @@ fun HomePage(navController: NavHostController, userVM: UserViewModel)
 
             if (filteredBookings.isEmpty())
             {
-                Text("No bookings found.", modifier = Modifier.padding(8.dp))
+                Text("No bookings found.",
+                    modifier = Modifier.padding(8.dp))
             } else
             {
                 LazyColumn(
@@ -88,6 +90,24 @@ fun HomePage(navController: NavHostController, userVM: UserViewModel)
             }
         }
 
+        if (showPopup && selectedBooking != null)
+        {
+            val room = rooms.find { it.id == selectedBooking!!.roomId }
+            androidx.compose.ui.window.Dialog(
+                onDismissRequest = {showPopup = false }
+            )
+            {
+                EditBookingPopUp(
+                    booking = selectedBooking!!,
+                    room = room,
+                    userVM = userVM,
+                    onDismiss = {
+                        showPopup = false
+                        userVM.fetchRooms()
+                    }
+                )
+            }
+        }
     }
 }
 
