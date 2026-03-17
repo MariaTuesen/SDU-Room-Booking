@@ -1,0 +1,24 @@
+[
+  {
+    "id": "2b6e0ee3-24ed-4744-8608-2c5c6e8125eb",
+    "userId": "39673d52-c0a1-4b37-8692-2532480157a8",
+    "title": "New booking",
+    "message": "Sofie Bergquist Madsen added you to a booking on 17/3/2026 from 10:33 to 12:33",
+    "createdAt": "2026-03-16T09:33:10.083Z",
+    "expiresAt": "17/3/2026 12:33",
+    "read": true,
+    "type": "booking_invite",
+    "bookingId": "5d1f08c2-d4c1-49ae-8899-638e398473c4"
+  },
+  {
+    "id": "395673a8-4559-471b-acff-e3ccac9a32c6",
+    "userId": "39673d52-c0a1-4b37-8692-2532480157a8",
+    "title": "New booking",
+    "message": "Sofie Bergquist Madsen added you to a booking on 17/3/2026 from 10:06 to 11:06",
+    "createdAt": "2026-03-17T09:06:34.993Z",
+    "expiresAt": "17/3/2026 11:06",
+    "read": true,
+    "type": "booking_invite",
+    "bookingId": "06bb72e8-03c8-4dcd-abf1-2795fd8c2167"
+  }
+]

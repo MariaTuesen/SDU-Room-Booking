@@ -46,6 +46,7 @@ import com.example.sduroombooking.ui.theme.AppGreen
 import com.example.sduroombooking.ui.theme.TextFieldGrey
 import com.example.sduroombooking.viewmodel.UserViewModel
 import java.util.Calendar
+import androidx.compose.foundation.layout.statusBarsPadding
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -199,6 +200,7 @@ fun CreateBooking(navController: NavController, userViewModel: UserViewModel) {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
+            .statusBarsPadding()
             .padding(horizontal = 18.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp),
         contentPadding = PaddingValues(top = 18.dp, bottom = 24.dp)
@@ -409,7 +411,10 @@ fun CreateBooking(navController: NavController, userViewModel: UserViewModel) {
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = locationExpanded) },
                         shape = outlineShape,
                         colors = textFieldColors,
-                        modifier = Modifier.menuAnchor().fillMaxWidth()
+                        modifier = Modifier
+                            .menuAnchor()
+                            .fillMaxWidth()
+                            .border(2.dp, AppGreen, outlineShape)
                     )
 
                     ExposedDropdownMenu(
@@ -445,7 +450,10 @@ fun CreateBooking(navController: NavController, userViewModel: UserViewModel) {
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = buildingExpanded) },
                         shape = outlineShape,
                         colors = textFieldColors,
-                        modifier = Modifier.menuAnchor().fillMaxWidth()
+                        modifier = Modifier
+                            .menuAnchor()
+                            .fillMaxWidth()
+                            .border(2.dp, AppGreen, outlineShape)
                     )
 
                     ExposedDropdownMenu(
