@@ -9,8 +9,7 @@ const fs = require('fs');
 
 const { readFriendsFile, writeFriendsFile, uniq } = require('./models/FriendsStore');
 const { readBookingsFile, writeBookingsFile, hasConflict } = require('./models/BookingsStore');
-const { readNotificationsFile, writeNotificationsFile } = require('./models/NotificationsStore');
-
+const {readNotificationsFile,writeNotificationsFile,removeExpiredNotifications} = require('./models/NotificationsStore');
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
@@ -344,12 +343,15 @@ app.post('/bookings', (req, res) => {
     for (const invitedUserId of uniqueUserIds) {
       if (invitedUserId === creatorId) continue;
 
+        const expiresAt = `${date} ${endTime}`;
+
       notifications.push({
         id: uuidv4(),
         userId: invitedUserId,
         title: 'New booking',
         message: `${creator?.fullName || 'Someone'} added you to a booking on ${date} from ${startTime} to ${endTime}`,
         createdAt: new Date().toISOString(),
+        expiresAt,
         read: false,
         type: 'booking_invite',
         bookingId: newBooking.id
@@ -370,7 +372,7 @@ app.get('/users/:id/notifications', (req, res) => {
     const userId = req.params.id;
     console.log('Fetching notifications for user:', userId);
 
-    const notifications = readNotificationsFile();
+    const notifications = removeExpiredNotifications();
 
     const userNotifications = notifications
       .filter(n => n.userId === userId)

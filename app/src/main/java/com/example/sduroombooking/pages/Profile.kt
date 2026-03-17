@@ -131,7 +131,7 @@ fun Profile(
                 onUnfriend = { friendUser ->
                     userViewModel.toggleFriend(context, friendUser)
                 },
-                modifier = Modifier.height(300.dp)
+                modifier = Modifier.height(400.dp)
             )
         }
 
@@ -144,7 +144,7 @@ fun Profile(
             colors = ButtonDefaults.buttonColors(containerColor = AppGreen),
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(bottom = 24.dp)
+                .padding(bottom = 120.dp)
                 .width(140.dp)
                 .height(50.dp)
         ) {
