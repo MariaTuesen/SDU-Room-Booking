@@ -143,6 +143,7 @@ fun NavigationBar(navController: NavHostController, userViewModel: UserViewModel
                             contentScale = ContentScale.Crop
                         )
                     }
+                    Spacer(modifier = Modifier.size(6.dp))
                     if (isProfile) {
                         Box(
                             modifier = Modifier
