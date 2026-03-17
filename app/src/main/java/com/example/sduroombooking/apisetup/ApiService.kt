@@ -16,6 +16,7 @@ import retrofit2.http.Path
 import com.example.sduroombooking.dataclasses.Booking
 import com.example.sduroombooking.dataclasses.CreateBookingRequest
 import retrofit2.http.Query
+import com.example.sduroombooking.dataclasses.NotificationItem
 
 data class SignupResponse(
     val message: String,
@@ -69,6 +70,17 @@ interface ApiService {
 
     @POST("bookings")
     suspend fun createBooking(@Body req: CreateBookingRequest): Booking
+
+    @GET("users/{id}/notifications")
+    suspend fun getNotifications(
+        @Path("id") id: String
+    ): List<NotificationItem>
+
+    @POST("users/{id}/notifications/{notificationId}/read")
+    suspend fun markNotificationAsRead(
+        @Path("id") id: String,
+        @Path("notificationId") notificationId: String
+    ): Response<Unit>
 
     @DELETE("bookings/{id}")
     suspend fun deleteBooking(@Path("id") id: String): Response<Unit>

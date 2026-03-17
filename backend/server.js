@@ -9,7 +9,7 @@ const fs = require('fs');
 
 const { readFriendsFile, writeFriendsFile, uniq } = require('./models/FriendsStore');
 const { readBookingsFile, writeBookingsFile, hasConflict } = require('./models/BookingsStore');
-
+const {readNotificationsFile,writeNotificationsFile,removeExpiredNotifications} = require('./models/NotificationsStore');
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
@@ -84,9 +84,9 @@ app.post('/auth/signup', (req, res) => {
       return res.status(400).json({ message: 'Missing fields' });
     }
 
-    if (!email.endsWith("@student.sdu.dk")) {
+    if (!email.endsWith('@student.sdu.dk')) {
       return res.status(400).json({
-        message: "Only SDU students can create an account"
+        message: 'Only SDU students can create an account'
       });
     }
 
@@ -108,21 +108,24 @@ app.post('/auth/signup', (req, res) => {
       message: 'User created successfully',
       user: newUser
     });
-
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Server error" });
+    return res.status(500).json({ message: 'Server error' });
   }
 });
 
 app.post('/auth/login', (req, res) => {
   const { email, password } = req.body;
-  if (!email || !password) return res.status(400).json({ message: 'Missing credentials' });
+  if (!email || !password) {
+    return res.status(400).json({ message: 'Missing credentials' });
+  }
 
   const user = usersDB.select({ email, password })[0];
-  if (!user) return res.status(401).json({ message: 'Invalid credentials' });
+  if (!user) {
+    return res.status(401).json({ message: 'Invalid credentials' });
+  }
 
-  res.json(user);
+  return res.json(user);
 });
 
 app.get('/users', (req, res) => {
@@ -164,7 +167,7 @@ app.post('/users/:id/profile-picture', upload.single('file'), (req, res) => {
   }
 });
 
-app.get("/users/:id/friends", async (req, res) => {
+app.get('/users/:id/friends', async (req, res) => {
   try {
     const userId = req.params.id;
 
@@ -185,35 +188,11 @@ app.get("/users/:id/friends", async (req, res) => {
     return res.json(friendUsers);
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ message: "Failed to get friends" });
-  }
-
-});
-app.get("/rooms", (req, res) => {
-  try {
-    const roomsFilePath = path.join(__dirname, "data", "rooms.json");
-
-    if (!fs.existsSync(roomsFilePath)) {
-      return res.status(404).json({ message: "rooms.json not found" });
-    }
-
-    const raw = fs.readFileSync(roomsFilePath, "utf8");
-    const rooms = JSON.parse(raw);
-
-    const normalized = (rooms || []).map(r => ({
-      ...r,
-      id: r.id || "",
-      building: String(r.building),
-    }));
-
-    return res.json(normalized);
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ message: "Failed to load rooms" });
+    return res.status(500).json({ message: 'Failed to get friends' });
   }
 });
 
-app.post("/users/:id/friends/:friendId", async (req, res) => {
+app.post('/users/:id/friends/:friendId', async (req, res) => {
   try {
     const userId = req.params.id;
     const friendId = req.params.friendId;
@@ -228,11 +207,11 @@ app.post("/users/:id/friends/:friendId", async (req, res) => {
     return res.sendStatus(204);
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ message: "Failed to add friend" });
+    return res.status(500).json({ message: 'Failed to add friend' });
   }
 });
 
-app.delete("/users/:id/friends/:friendId", async (req, res) => {
+app.delete('/users/:id/friends/:friendId', async (req, res) => {
   try {
     const userId = req.params.id;
     const friendId = req.params.friendId;
@@ -247,7 +226,7 @@ app.delete("/users/:id/friends/:friendId", async (req, res) => {
     return res.sendStatus(204);
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ message: "Failed to remove friend" });
+    return res.status(500).json({ message: 'Failed to remove friend' });
   }
 });
 
@@ -284,6 +263,30 @@ app.delete('/users/:id', async (req, res) => {
   }
 });
 
+app.get('/rooms', (req, res) => {
+  try {
+    const roomsFilePath = path.join(__dirname, 'data', 'rooms.json');
+
+    if (!fs.existsSync(roomsFilePath)) {
+      return res.status(404).json({ message: 'rooms.json not found' });
+    }
+
+    const raw = fs.readFileSync(roomsFilePath, 'utf8');
+    const rooms = JSON.parse(raw);
+
+    const normalized = (rooms || []).map(r => ({
+      ...r,
+      id: r.id || '',
+      building: String(r.building),
+    }));
+
+    return res.json(normalized);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Failed to load rooms' });
+  }
+});
+
 app.get('/bookings', (req, res) => {
   try {
     const { date, roomId } = req.query;
@@ -305,6 +308,7 @@ app.get('/bookings', (req, res) => {
 app.post('/bookings', (req, res) => {
   try {
     const { roomId, date, startTime, endTime, userIds } = req.body;
+
     if (roomId == null || !date || !startTime || !endTime) {
       return res.status(400).json({ message: 'Missing fields' });
     }
@@ -315,18 +319,46 @@ app.post('/bookings', (req, res) => {
       return res.status(409).json({ message: 'Room is already booked in that timeframe' });
     }
 
+    const uniqueUserIds = Array.isArray(userIds) ? [...new Set(userIds)] : [];
+
     const newBooking = {
       id: uuidv4(),
       roomId: Number(roomId),
       date,
       startTime,
       endTime,
-      userIds: Array.isArray(userIds) ? [...new Set(userIds)] : [], // unique + safe
+      userIds: uniqueUserIds,
       createdAt: new Date().toISOString()
     };
 
     bookings.push(newBooking);
     writeBookingsFile(bookings);
+
+    const creatorId = uniqueUserIds[0];
+    const allUsers = usersDB.select({}) || [];
+    const creator = allUsers.find(u => u.id === creatorId);
+
+    const notifications = readNotificationsFile();
+
+    for (const invitedUserId of uniqueUserIds) {
+      if (invitedUserId === creatorId) continue;
+
+        const expiresAt = `${date} ${endTime}`;
+
+      notifications.push({
+        id: uuidv4(),
+        userId: invitedUserId,
+        title: 'New booking',
+        message: `${creator?.fullName || 'Someone'} added you to a booking on ${date} from ${startTime} to ${endTime}`,
+        createdAt: new Date().toISOString(),
+        expiresAt,
+        read: false,
+        type: 'booking_invite',
+        bookingId: newBooking.id
+      });
+    }
+
+    writeNotificationsFile(notifications);
 
     return res.status(201).json(newBooking);
   } catch (err) {
@@ -335,4 +367,47 @@ app.post('/bookings', (req, res) => {
   }
 });
 
-app.listen(3000, '0.0.0.0', () => console.log('Server running on http://localhost:3000'));
+app.get('/users/:id/notifications', (req, res) => {
+  try {
+    const userId = req.params.id;
+    console.log('Fetching notifications for user:', userId);
+
+    const notifications = removeExpiredNotifications();
+
+    const userNotifications = notifications
+      .filter(n => n.userId === userId)
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    return res.json(userNotifications);
+  } catch (err) {
+    console.error('Failed to fetch notifications:', err);
+    return res.status(500).json({ message: 'Failed to fetch notifications' });
+  }
+});
+
+app.post('/users/:id/notifications/:notificationId/read', (req, res) => {
+  try {
+    const { id, notificationId } = req.params;
+    const notifications = readNotificationsFile();
+
+    const index = notifications.findIndex(
+      n => n.id === notificationId && n.userId === id
+    );
+
+    if (index === -1) {
+      return res.status(404).json({ message: 'Notification not found' });
+    }
+
+    notifications[index].read = true;
+    writeNotificationsFile(notifications);
+
+    return res.sendStatus(204);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Failed to mark notification as read' });
+  }
+});
+
+app.listen(3000, '0.0.0.0', () => {
+  console.log('Server running on http://localhost:3000');
+});

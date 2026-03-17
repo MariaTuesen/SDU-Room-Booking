@@ -17,6 +17,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import retrofit2.HttpException
 import com.example.sduroombooking.dataclasses.Booking
 import com.example.sduroombooking.dataclasses.CreateBookingRequest
+import com.example.sduroombooking.dataclasses.NotificationItem
 
 class UserViewModel : ViewModel() {
 
@@ -34,6 +35,44 @@ class UserViewModel : ViewModel() {
     var bookingsForSelectedDate = mutableStateOf<List<Booking>>(emptyList())
     var bookingsLoading = mutableStateOf(false)
     var bookingsError = mutableStateOf<String?>(null)
+    var notifications = mutableStateOf<List<NotificationItem>>(emptyList())
+    var notificationsLoading = mutableStateOf(false)
+    var notificationsError = mutableStateOf<String?>(null)
+
+    fun fetchNotifications() {
+        val me = currentUser.value ?: return
+
+        viewModelScope.launch {
+            notificationsLoading.value = true
+            notificationsError.value = null
+            try {
+                notifications.value = RetrofitClient.api.getNotifications(me.id)
+            } catch (e: Exception) {
+                notificationsError.value = "Failed to fetch notifications: ${e.message}"
+                notifications.value = emptyList()
+            } finally {
+                notificationsLoading.value = false
+            }
+        }
+    }
+
+    fun markNotificationAsRead(notificationId: String) {
+        val me = currentUser.value ?: return
+
+        viewModelScope.launch {
+            try {
+                RetrofitClient.api.markNotificationAsRead(me.id, notificationId)
+                notifications.value = notifications.value.map {
+                    if (it.id == notificationId) it.copy(read = true) else it
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    val unreadNotificationCount: Int
+        get() = notifications.value.count { !it.read }
 
     fun signup(
         fullName: String,
