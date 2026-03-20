@@ -9,19 +9,24 @@ enum class Destination(
     val route: String,
     val label: String,
     val contentDescription: String
-
-){
+) {
     HOME("home", "Home", "Home"),
     PROFILE("profile", "Profile", "Profile"),
     LOGIN("login", "Login", "Login"),
     CREATEACCOUNT("createAccount", "CreateAccount", "Create Account"),
     SEARCHPEOPLE("searchPeople", "SearchPeople", "Search People"),
-    TERMSANDCONDITIONS("termsAndConditions", "TermsAndConditions", "Terms and Conditions"),
-    CREATEBOOKING("createBooking", "CreateBooking", "Create booking")}
+    TERMSANDCONDITIONS("termsAndConditions?showNavbar={showNavbar}", "TermsAndConditions", "Terms and Conditions"),
+    CREATEBOOKING("createBooking", "CreateBooking", "Create booking");
+
+    fun createTermsRoute(showNavbar: Boolean): String {
+        return "termsAndConditions?showNavbar=$showNavbar"
+    }
+}
+
 enum class NavIcon(
     var destination: Destination,
     val icon: ImageVector,
-){
+) {
     HOME(Destination.HOME, Icons.Outlined.Home),
     SETTINGS(Destination.PROFILE, Icons.Outlined.Settings),
 }

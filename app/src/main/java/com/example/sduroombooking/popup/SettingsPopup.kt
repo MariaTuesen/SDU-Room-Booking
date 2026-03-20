@@ -27,7 +27,7 @@ import androidx.compose.foundation.border
 @Composable
 fun SettingsPopup(
     onDismiss: () -> Unit,
-    onDeleteAccount: () -> Unit,
+    onDeleteAccountClick: () -> Unit,
     onTerms: () -> Unit
 ) {
     Dialog(
@@ -48,7 +48,7 @@ fun SettingsPopup(
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Button(
-                    onClick = onDeleteAccount,
+                    onClick = onDeleteAccountClick,
                     colors = ButtonDefaults.buttonColors(containerColor = AppGreen),
                     shape = RoundedCornerShape(12.dp)
                 ) {

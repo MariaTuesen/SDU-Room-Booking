@@ -30,6 +30,7 @@ import coil.request.ImageRequest
 import com.example.sduroombooking.R
 import com.example.sduroombooking.dataclasses.User
 import com.example.sduroombooking.navigation.Destination
+import com.example.sduroombooking.popup.DeleteAccountConfirmationPopup
 import com.example.sduroombooking.popup.NotificationsPopup
 import com.example.sduroombooking.popup.SettingsPopup
 import com.example.sduroombooking.ui.theme.AlatsiFont
@@ -58,6 +59,7 @@ fun Profile(
 
     var showPopup by remember { mutableStateOf(false) }
     var showNotificationsPopup by remember { mutableStateOf(false) }
+    var showDeleteConfirmation by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         userViewModel.fetchAllUsers()
@@ -159,20 +161,34 @@ fun Profile(
         if (showPopup) {
             SettingsPopup(
                 onDismiss = { showPopup = false },
-                onDeleteAccount = {
+                onDeleteAccountClick = {
+                    showPopup = false
+                    showDeleteConfirmation = true
+                },
+                onTerms = {
+                    showPopup = false
+                    navController.navigate(Destination.TERMSANDCONDITIONS.createTermsRoute(true))
+                }
+            )
+        }
+        if (showDeleteConfirmation) {
+            DeleteAccountConfirmationPopup(
+                userEmail = user?.email ?: "",
+                onDismiss = { showDeleteConfirmation = false },
+                onConfirmDelete = {
                     val currentUser = userViewModel.currentUser.value
                     if (currentUser == null) {
                         android.widget.Toast
                             .makeText(context, "No user logged in", android.widget.Toast.LENGTH_LONG)
                             .show()
-                        return@SettingsPopup
+                        return@DeleteAccountConfirmationPopup
                     }
 
                     userViewModel.deleteAccount(
                         context = context,
                         userId = currentUser.id,
                         onSuccess = {
-                            showPopup = false
+                            showDeleteConfirmation = false
                             navController.navigate(Destination.LOGIN.route) {
                                 popUpTo(0)
                             }
@@ -184,10 +200,6 @@ fun Profile(
                                 .show()
                         }
                     )
-                },
-                onTerms = {
-                    showPopup = false
-                    navController.navigate(Destination.TERMSANDCONDITIONS.route)
                 }
             )
         }
