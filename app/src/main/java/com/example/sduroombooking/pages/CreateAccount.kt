@@ -163,7 +163,7 @@ fun CreateAccount(
                     fontFamily= AlatsiFont,
                     color = AppGreen,
                     modifier = Modifier.clickable {
-                        navController.navigate(Destination.TERMSANDCONDITIONS.route)
+                        navController.navigate(Destination.TERMSANDCONDITIONS.createTermsRoute(false))
                     }
                 )
             }
