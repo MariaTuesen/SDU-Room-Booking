@@ -194,12 +194,3 @@ fun NavigationBar(navController: NavHostController, userViewModel: UserViewModel
         }
     }
 }
-
-@Preview(showBackground = true)
-@Composable
-fun NavigationBarPreview() {
-    val navController = rememberNavController()
-    NavigationBar(navController = navController,
-        userViewModel = UserViewModel()
-    )
-}
