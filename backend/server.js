@@ -367,6 +367,62 @@ app.post('/bookings', (req, res) => {
   }
 });
 
+app.post('/bookings/:id', (req, res) =>
+{
+  try
+   {
+    const { id } = req.params;
+    const { userIds } = req.body;
+
+    if (!Array.isArray(userIds))
+     {
+      return res.status(400).json({ message: 'userIds must be an array' });
+    }
+
+    const bookings = readBookingsFile();
+    const index = bookings.findIndex(b => b.id === id);
+
+    if (index === -1)
+    {
+      return res.status(404).json({ message: 'Booking not found' });
+    }
+    bookings[index].userIds = [...new Set(userIds)];
+
+    writeBookingsFile(bookings);
+
+    console.log(`Booking ${id} got updated with new members:`, bookings[index].userIds);
+
+    return res.json(bookings[index]);
+  } catch (err)
+   {
+    console.error('Error with updating booking:', err);
+    return res.status(500).json({ message: 'Failed to update booking' });
+  }
+});
+
+app.delete('/bookings/:id', (req, res) =>
+{
+  try
+   {
+    const { id } = req.params;
+    let bookings = readBookingsFile();
+
+    const originalLength = bookings.length;
+    bookings = bookings.filter(b => b.id !== id);
+
+    if (bookings.length === originalLength)
+     {
+      return res.status(404).json({ message: 'Booking not found' });
+    }
+
+    writeBookingsFile(bookings);
+    return res.sendStatus(204);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Failed to delete booking' });
+  }
+});
+
 app.get('/users/:id/notifications', (req, res) => {
   try {
     const userId = req.params.id;

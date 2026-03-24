@@ -39,6 +39,8 @@ class UserViewModel : ViewModel() {
     var notificationsLoading = mutableStateOf(false)
     var notificationsError = mutableStateOf<String?>(null)
 
+    var currentUserBookings = mutableStateOf<List<Booking>>(emptyList())
+
     fun fetchNotifications() {
         val me = currentUser.value ?: return
 
@@ -363,9 +365,32 @@ class UserViewModel : ViewModel() {
 
                 RetrofitClient.api.updateBooking(booking.id, updatedBooking)
 
+                fetchUserBookings()
+
                 onSuccess()
             } catch (e: Exception){
                 e.printStackTrace()
+            }
+        }
+    }
+
+    fun fetchUserBookings()
+    {
+        val userId = currentUser.value?.id ?: return
+
+        viewModelScope.launch{
+            bookingsLoading.value = true
+            try
+            {
+                val allBookings = RetrofitClient.api.getBookings()
+                currentUserBookings.value = allBookings.filter { it.userIds.contains(userId) }
+            } catch (e: Exception)
+            {
+                e.printStackTrace()
+                bookingsError.value = "Couldn't load you booking"
+            } finally
+            {
+                bookingsLoading.value = false
             }
         }
     }

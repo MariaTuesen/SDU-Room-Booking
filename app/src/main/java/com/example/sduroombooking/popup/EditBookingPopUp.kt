@@ -1,5 +1,6 @@
 package com.example.sduroombooking.popup
 
+import android.provider.Telephony
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -7,21 +8,29 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material.icons.filled.WatchLater
+import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
@@ -50,22 +59,26 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.LightingColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.ModifierLocalBeyondBoundsLayout
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.sduroombooking.R
 import com.example.sduroombooking.cards.BookedRoomCard
+import com.example.sduroombooking.cards.BookedRoomUiModel
 import com.example.sduroombooking.dataclasses.Booking
+import com.example.sduroombooking.dataclasses.User
 import com.example.sduroombooking.ui.theme.AppGreen
 import com.example.sduroombooking.ui.theme.TextFieldGrey
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditBookingPopUp(
-    booking: com.example.sduroombooking.dataclasses.Booking,
+    booking: Booking,
     room: com.example.sduroombooking.dataclasses.Room?,
     userVM: com.example.sduroombooking.viewmodel.UserViewModel,
     onDismiss: () -> Unit
@@ -77,8 +90,12 @@ fun EditBookingPopUp(
     var peopleExpanded by remember { mutableStateOf(false) }
 
     val allUsers = userVM.allUsers.value
-    val participants = remember(booking.userIds, allUsers) {
-        allUsers.filter { it.id in booking.userIds }
+    val participants by remember(booking.id, userVM.currentUserBookings.value,allUsers){
+        derivedStateOf {
+            val freshBooking = userVM.currentUserBookings.value.find { it.id == booking.id }
+            val idsToShow = freshBooking?.userIds ?: booking.userIds
+            allUsers.filter { it.id in idsToShow }
+        }
     }
 
     val candidatePeople by remember(peopleQuery, allUsers, booking.userIds) {
@@ -99,45 +116,67 @@ fun EditBookingPopUp(
         border = BorderStroke(2.dp, AppGreen),
         colors = CardDefaults.cardColors(TextFieldGrey)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row(modifier = Modifier.fillMaxWidth()) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = room?.name ?: "Unknown Room",
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.Bold
-                        )
+        Column(modifier = Modifier.padding(20.dp))
+        {
+            Row(modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.Top,
+                horizontalArrangement = Arrangement.SpaceBetween
+            )
+            {
+                Column(modifier = Modifier.weight(1f))
+                {
+                       Row(
+                           verticalAlignment = Alignment.CenterVertically,
+                           horizontalArrangement = Arrangement.spacedBy(12.dp)
+                       )
+                       {
+                            Text(
+                                text  = room?.name ?: "Unknown Room",
+                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Black),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
 
-                        Spacer(modifier = Modifier.width(8.dp))
+                           Row(verticalAlignment = Alignment.CenterVertically)
+                           {
+                               Icon(
+                                       Icons.Default.DateRange,
+                                       null,
+                                       modifier = Modifier.size(20.dp)
+                                   )
 
-                        Icon(
-                            Icons.Default.CalendarMonth,
-                            null,
-                            modifier = Modifier.size(24.dp)
-                        )
+                               Spacer(modifier =  Modifier.width(4.dp))
 
-                        Text(text = " ${booking.date} ",
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.Bold
-                        )
+                               Text(
+                                   text = booking.date,
+                                   style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Black),
+                                   maxLines = 1,
+                                   overflow = TextOverflow.Ellipsis
+                               )
+                           }
 
-                        Icon(
-                            Icons.Default.WatchLater,
-                            null,
-                            modifier = Modifier.size(24.dp)
-                        )
+                           Row(verticalAlignment =Alignment.CenterVertically)
+                           {
+                               Icon(
+                                   Icons.Default.Timer,
+                                   null,
+                                   modifier = Modifier.size(20.dp)
+                               )
 
-                        Text(text = " ${booking.startTime}-${booking.endTime}",
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
+                               Spacer(modifier =  Modifier.size(20.dp))
+
+                               Text(
+                                   text = "${booking.startTime}-${booking.endTime}",
+                                   style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Black),
+                                   maxLines = 1,
+                                   overflow = TextOverflow.Ellipsis
+                               )
+                           }
+                       }
 
                     Text(
-                        text = room?.let { "${it.building}, ${it.location}" }?: "",
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Medium
+                        text = room?.let { "${it.building}, ${it.location}" } ?: "",
+                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Black)
                     )
                 }
 
@@ -148,35 +187,91 @@ fun EditBookingPopUp(
                         color = Color.Red,
                         onClick = {
                             userVM.deleteBooking(
-                                bookingId = booking.id,
-                                onSuccess = {
-                                    onDismiss()
-                                },
+                                booking.id,
+                                onSuccess = { onDismiss() },
                                 onError = {}
                             )
                         }
                     )
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(6.dp))
 
                     StatusButton(
                         text = "Report issue",
-                        color = Color(0xFFFFC107),
-                        onClick = { }
+                        color = Color.Yellow,
+                        onClick = {}
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp))
-            {
-                InfoBadge(
-                    text = "${room?.seats ?: ""} seats")
-                if (room?.has_monitor == true) InfoBadge(text = "TV screen")
-                if (room?.has_whiteboard == true) InfoBadge(text = "Whiteboard")
-                if (room?.is_accessible == true) InfoBadge(text = "acc")
+            androidx.compose.foundation.lazy.LazyRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                contentPadding = PaddingValues(end = 16.dp)
+            ) {
+                item {
+                    AssistChip(
+                        onClick = {},
+                        label = {
+                            Text(
+                                "${room?.seats ?: 0} seats",
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                    )
+                }
+
+                if (room?.has_monitor == true) {
+                    item {
+                        AssistChip(
+                            onClick = {},
+                            label = {
+                                Text(
+                                    "TV screen",
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
+                        )
+                    }
+                }
+
+                if (room?.has_whiteboard == true) {
+                    item {
+                        AssistChip(
+                            onClick = {},
+                            label = {
+                                Text(
+                                    "Whiteboard",
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
+                        )
+                    }
+                }
+
+                if (room?.is_accessible == true) {
+                    item {
+                        Icon(
+                            painter = painterResource(R.drawable.wheelchair),
+                            contentDescription = "Accessible",
+                            tint = Color.Unspecified,
+                            modifier = Modifier
+                                .size(26.dp)
+                                .padding(start = 4.dp)
+                                .offset(y = 11.dp)
+                        )
+                    }
+                }
             }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            HorizontalDivider(color = Color.LightGray.copy(alpha = 0.3f))
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -197,8 +292,7 @@ fun EditBookingPopUp(
                         .border(2.dp, AppGreen, RoundedCornerShape(14.dp)),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = Color.Transparent,
-                        unfocusedBorderColor = Color.Transparent,
-                        focusedContainerColor = Color.White.copy(alpha = 0.5f)
+                        unfocusedBorderColor = Color.Transparent
                     )
                 )
 
@@ -211,9 +305,9 @@ fun EditBookingPopUp(
                                 val newUserList = booking.userIds + user.id
                                 userVM.updateBookingParticipants(booking, newUserList)
                                 {
-                                    userVM.fetchBookingsForDate(booking.date)
                                 }
-                                peopleQuery = ""; peopleExpanded = false
+                                peopleQuery = "";
+                                peopleExpanded = false
                             }
                         )
                     }
@@ -222,31 +316,32 @@ fun EditBookingPopUp(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            participants.forEach { user ->
-                ParticipantItem(
-                    user =user,
-                    onRemove = {
-                        val newUserList = booking.userIds.filter { it != user.id }
-                        userVM.updateBookingParticipants(booking, newUserList)
-                        {
-                            userVM.fetchBookingsForDate(booking.date)
-                        }
-
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 150.dp)
+            ) {
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    items(participants) { user ->
+                        ParticipantItem(
+                            user = user,
+                            onRemove = {
+                                val newList = booking.userIds.filter { it != user.id }
+                                userVM.updateBookingParticipants(booking, newList) { }
+                            }
+                        )
                     }
-                )
-                HorizontalDivider(
-                    modifier = Modifier
-                        .padding(vertical = 4.dp),
-                    color = Color.Gray.copy(alpha = 0.3f)
-                )
+                }
             }
-
         }
     }
 }
 
 @Composable
-fun ParticipantItem(user: com.example.sduroombooking.dataclasses.User, onRemove: () -> Unit)
+fun ParticipantItem(user: User, onRemove: () -> Unit)
 {
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -258,60 +353,42 @@ fun ParticipantItem(user: com.example.sduroombooking.dataclasses.User, onRemove:
         AsyncImage(
             model = user.profile_picture ?: R.drawable.no_profile_image,
             contentDescription = null,
-            modifier = Modifier.size(45.dp).clip(CircleShape).background(Color.LightGray),
+            modifier = Modifier
+                .size(45.dp)
+                .clip(CircleShape)
+                .background(Color.LightGray),
             contentScale = ContentScale.Crop
         )
 
         Spacer(modifier = Modifier.width(12.dp))
 
-        Column(modifier = Modifier.weight(1f))
-        {
-            Text(
-                text = user.fullName,
-                fontWeight = FontWeight.Bold,
-                fontSize = 14.sp
-            )
-
-            Text(
-                text = user.email,
-                fontSize = 11.sp,
-                color = Color.Black
-            )
+        Column(modifier = Modifier.weight(1f)) {
+            Text(text = user.fullName, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+            Text(text = user.email, fontSize = 11.sp, color = Color.Gray)
         }
 
-        Spacer(modifier = Modifier.width(12.dp))
-
-        IconButton(onClick = onRemove)
-        {
-            Icon(
-                Icons.Default.Delete,
-                contentDescription = "Remove",
-                modifier = Modifier.size(20.dp)
-            )
+        IconButton(onClick = onRemove) {
+            Icon(Icons.Default.Delete, contentDescription = "Remove", modifier = Modifier.size(20.dp))
         }
     }
 }
 
-
 @Composable
-fun StatusButton(text: String, color: Color, onClick: () -> Unit) {
-    Surface(
-        shape = RoundedCornerShape(8.dp),
-        border = BorderStroke(1.5.dp, color),
-        color = Color.LightGray.copy(alpha = 0.5f),
-        modifier = Modifier.clickable { onClick() }
-    ) {
-        Text(text = text, modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp), fontSize = 12.sp, fontWeight = FontWeight.Bold)
-    }
-}
-
-@Composable
-fun InfoBadge(text: String)
+fun StatusButton(text: String, color: Color, onClick: () -> Unit)
 {
     Surface(
         shape = RoundedCornerShape(8.dp),
-        color = Color.LightGray
-    ) {
-        Text(text = text, modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp), fontSize = 10.sp, fontWeight = FontWeight.Bold)
+        border = BorderStroke(1.5.dp, color),
+        color = Color.LightGray.copy(alpha = 0.3f),
+        modifier = Modifier.clickable {onClick()}
+    )
+    {
+        Text(
+            text = text,
+            modifier = Modifier
+                .padding(horizontal = 8.dp, vertical = 4.dp),
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Black
+        )
     }
 }

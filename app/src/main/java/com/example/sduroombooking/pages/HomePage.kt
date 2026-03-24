@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -25,28 +26,19 @@ fun HomePage(navController: NavHostController, userVM: UserViewModel)
 {
     val rooms by userVM.allRooms
     val currentUser = userVM.currentUser.value
-
-    var filteredBookings by remember{
-        mutableStateOf<List<com.example.sduroombooking.dataclasses.Booking>>(
-            emptyList()
-        )
-    }
+    val userBookings by userVM.currentUserBookings
 
     var showPopup by remember { mutableStateOf(false) }
-    var selectedBooking by remember { mutableStateOf<com.example.sduroombooking.dataclasses.Booking?>(null) }
+    var selectedId by remember { mutableStateOf<String?>(null) }
+
+   val selectedBooking = remember(selectedId, userBookings) {
+       userBookings.find {it.id == selectedId}
+   }
 
     LaunchedEffect(Unit)
     {
         userVM.fetchRooms()
-
-        try {
-            val allBookings = com.example.sduroombooking.apisetup.RetrofitClient.api.getBookings()
-            if (currentUser != null) {
-                filteredBookings = allBookings.filter { it.userIds.contains(currentUser.id) }
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
+        userVM.fetchUserBookings()
     }
 
     Box(modifier = Modifier.fillMaxSize())
@@ -64,7 +56,7 @@ fun HomePage(navController: NavHostController, userVM: UserViewModel)
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            if (filteredBookings.isEmpty())
+            if (userBookings.isEmpty())
             {
                 Text("No bookings found.",
                     modifier = Modifier.padding(8.dp))
@@ -76,13 +68,22 @@ fun HomePage(navController: NavHostController, userVM: UserViewModel)
                     contentPadding = PaddingValues(bottom = 80.dp)
                 )
                 {
-                    items(filteredBookings) { booking ->
+                    items(userBookings) { booking ->
                         val room = rooms.find { it.id == booking.roomId }
+
+                        val cardModel = com.example.sduroombooking.cards.BookedRoomUiModel(
+                            roomName = room?.name ?: "Unknown",
+                            building = room?.building ?: "Unknown Building",
+                            dateText = booking.date,
+                            timeText = "${booking.startTime}-${booking.endTime}",
+                            roomDbId = room?.id ?: 0,
+                            date = booking.date,
+                            timeRange = "${booking.startTime}-${booking.endTime}"
+                        )
                         BookedRoomCard(
-                            booking = booking,
-                            room = room,
+                           model = cardModel,
                             onEditClick = {
-                                selectedBooking = booking
+                                selectedId = booking.id
                                 showPopup = true
                             })
                     }
@@ -92,20 +93,30 @@ fun HomePage(navController: NavHostController, userVM: UserViewModel)
 
         if (showPopup && selectedBooking != null)
         {
-            val room = rooms.find { it.id == selectedBooking!!.roomId }
+            val room = rooms.find { it.id == selectedBooking.roomId }
             androidx.compose.ui.window.Dialog(
-                onDismissRequest = {showPopup = false }
+                onDismissRequest = {showPopup = false },
+                properties = androidx.compose.ui.window.DialogProperties(
+                    usePlatformDefaultWidth = false
+                )
             )
             {
-                EditBookingPopUp(
-                    booking = selectedBooking!!,
-                    room = room,
-                    userVM = userVM,
-                    onDismiss = {
-                        showPopup = false
-                        userVM.fetchRooms()
-                    }
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(1f)
+                        .padding(vertical = 20.dp),
+                    contentAlignment = Alignment.Center
                 )
+                {
+                    EditBookingPopUp(
+                        booking = selectedBooking,
+                        room = room,
+                        userVM = userVM,
+                        onDismiss = {
+                            showPopup = false
+                        }
+                    )
+                }
             }
         }
     }
