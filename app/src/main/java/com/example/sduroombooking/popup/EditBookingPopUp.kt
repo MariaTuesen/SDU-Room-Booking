@@ -57,8 +57,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.LightingColorFilter
+import androidx.compose.ui.input.pointer.stylusHoverIcon
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.ModifierLocalBeyondBoundsLayout
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontWeight
@@ -69,6 +71,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.example.sduroombooking.R
 import com.example.sduroombooking.cards.BookedRoomCard
 import com.example.sduroombooking.cards.BookedRoomUiModel
@@ -277,7 +280,8 @@ fun EditBookingPopUp(
             ExposedDropdownMenuBox(
                 expanded = peopleExpanded,
                 onExpandedChange = { peopleExpanded = it }
-            ) {
+            )
+            {
                 OutlinedTextField(
                     value = peopleQuery,
                     onValueChange = { peopleQuery = it; peopleExpanded = true },
@@ -295,11 +299,46 @@ fun EditBookingPopUp(
                     )
                 )
 
-                ExposedDropdownMenu(expanded = peopleExpanded, onDismissRequest = { peopleExpanded = false})
+                ExposedDropdownMenu(
+                    expanded = peopleExpanded,
+                    onDismissRequest = { peopleExpanded = false}
+                )
                 {
                     candidatePeople.take(5).forEach { user ->
                         DropdownMenuItem(
-                            text = {Text(user.fullName) },
+                            text =
+                                {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        modifier = Modifier.fillMaxWidth()
+                                    )
+                                    {
+                                        val baseUrl = "http://10.0.2.2:3000"
+                                        val imageUrl = user.profile_picture
+                                            ?.takeIf { it.isNotBlank() }
+                                            ?.let { if (it.startsWith("http")) it else baseUrl + it }
+
+                                        AsyncImage(
+                                            model = ImageRequest.Builder(LocalContext.current)
+                                                .data(imageUrl ?: R.drawable.no_profile_image)
+                                                .crossfade(true)
+                                                .build(),
+                                            contentDescription = "Profile picture",
+                                            modifier = Modifier
+                                                .size(35.dp)
+                                                .clip(CircleShape),
+                                            contentScale = ContentScale.Crop
+                                        )
+
+                                        Spacer(modifier = Modifier.width(12.dp))
+
+                                            Text(
+                                                text = user.fullName,
+                                                style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Black)
+                                            )
+
+                                    }
+                                   },
                             onClick = {
                                 val newUserList = booking.userIds + user.id
                                 userVM.updateBookingParticipants(booking, newUserList)
@@ -387,6 +426,12 @@ fun ParticipantItem(user: User, onRemove: () -> Unit)
 {
     var showConfirmDeleteParticipant by remember { mutableStateOf(false) }
 
+    val baseUrl = "http://10.0.2.2:3000"
+
+    val imageUrl = user.profile_picture
+        ?.takeIf { it.isNotBlank() }
+        ?.let { if (it.startsWith("http")) it else "$baseUrl$it" }
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
@@ -395,12 +440,16 @@ fun ParticipantItem(user: User, onRemove: () -> Unit)
     )
     {
         AsyncImage(
-            model = user.profile_picture ?: R.drawable.no_profile_image,
-            contentDescription = null,
+            model = ImageRequest.Builder(LocalContext.current)
+                .data(imageUrl ?: R.drawable.no_profile_image)
+                .crossfade(true)
+                .build(),
+            placeholder = painterResource(R.drawable.no_profile_image),
+            error = painterResource(R.drawable.no_profile_image),
+            contentDescription = "Profile picture",
             modifier = Modifier
                 .size(45.dp)
-                .clip(CircleShape)
-                .background(Color.LightGray),
+                .clip(CircleShape),
             contentScale = ContentScale.Crop
         )
 
