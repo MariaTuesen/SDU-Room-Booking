@@ -385,6 +385,8 @@ fun EditBookingPopUp(
 @Composable
 fun ParticipantItem(user: User, onRemove: () -> Unit)
 {
+    var showConfirmDeleteParticipant by remember { mutableStateOf(false) }
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
@@ -409,10 +411,30 @@ fun ParticipantItem(user: User, onRemove: () -> Unit)
             Text(text = user.email, fontSize = 11.sp, color = Color.Gray)
         }
 
-        IconButton(onClick = onRemove) {
+        IconButton(onClick = {  showConfirmDeleteParticipant = true}) {
             Icon(Icons.Default.Delete, contentDescription = "Remove", modifier = Modifier.size(20.dp))
         }
     }
+
+    if (showConfirmDeleteParticipant)
+    {
+        Dialog(
+            onDismissRequest = { showConfirmDeleteParticipant = false},
+            properties = DialogProperties(
+                usePlatformDefaultWidth = false)
+        )
+        {
+            ConfirmDeleteParticipantPopUp(
+                userName = user.fullName,
+                onConfirm = {
+                    onRemove()
+                    showConfirmDeleteParticipant = false
+                },
+                onDismiss = {showConfirmDeleteParticipant = false}
+            )
+        }
+    }
+
 }
 
 @Composable
