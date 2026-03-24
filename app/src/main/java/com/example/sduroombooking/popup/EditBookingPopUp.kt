@@ -66,6 +66,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import coil.compose.AsyncImage
 import com.example.sduroombooking.R
 import com.example.sduroombooking.cards.BookedRoomCard
@@ -85,10 +87,12 @@ fun EditBookingPopUp(
 
     )
 {
+    val context = androidx.compose.ui.platform.LocalContext.current
 
     var peopleQuery by remember { mutableStateOf("") }
     var peopleExpanded by remember { mutableStateOf(false) }
     var showConfirmDelete by remember { mutableStateOf(false) }
+    var showReportIssue by remember {mutableStateOf(false)}
 
     val allUsers = userVM.allUsers.value
     val participants by remember(booking.id, userVM.currentUserBookings.value,allUsers){
@@ -194,7 +198,7 @@ fun EditBookingPopUp(
                     StatusButton(
                         text = "Report issue",
                         color = Color.Yellow,
-                        onClick = {}
+                        onClick = { showReportIssue = true}
                     )
                 }
             }
@@ -353,6 +357,26 @@ fun EditBookingPopUp(
                     )
                 },
                 onDismiss = {showConfirmDelete = false}
+            )
+        }
+    }
+
+    if (showReportIssue)
+    {
+        Dialog(
+            onDismissRequest = { showReportIssue = false},
+            properties = DialogProperties(
+                usePlatformDefaultWidth = false)
+        )
+        {
+            ReportIssuePopUp(
+                roomName = room?.name ?: "Unkown Room",
+                onDismiss = { showReportIssue = false },
+                onSend = {
+                    android.widget.Toast.makeText(context, "Report sent successfully", android.widget.Toast.LENGTH_SHORT).show()
+
+                    showReportIssue = false
+                }
             )
         }
     }
