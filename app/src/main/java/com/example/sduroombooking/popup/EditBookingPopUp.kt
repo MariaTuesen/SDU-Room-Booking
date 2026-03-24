@@ -88,6 +88,7 @@ fun EditBookingPopUp(
 
     var peopleQuery by remember { mutableStateOf("") }
     var peopleExpanded by remember { mutableStateOf(false) }
+    var showConfirmDelete by remember { mutableStateOf(false) }
 
     val allUsers = userVM.allUsers.value
     val participants by remember(booking.id, userVM.currentUserBookings.value,allUsers){
@@ -185,13 +186,7 @@ fun EditBookingPopUp(
                     StatusButton(
                         text = "Cancel booking",
                         color = Color.Red,
-                        onClick = {
-                            userVM.deleteBooking(
-                                booking.id,
-                                onSuccess = { onDismiss() },
-                                onError = {}
-                            )
-                        }
+                        onClick = { showConfirmDelete = true}
                     )
 
                     Spacer(modifier = Modifier.height(6.dp))
@@ -336,6 +331,29 @@ fun EditBookingPopUp(
                     }
                 }
             }
+        }
+    }
+
+    if (showConfirmDelete)
+    {
+        androidx.compose.ui.window.Dialog(
+            onDismissRequest = { showConfirmDelete = false}
+        )
+        {
+            ConfirmDeletePopUp(
+                onConfirm = {
+                    userVM.deleteBooking(
+                        booking.id,
+                        onSuccess = {
+                            userVM.fetchUserBookings()
+                            showConfirmDelete = false
+                            onDismiss()
+                        },
+                        onError = {}
+                    )
+                },
+                onDismiss = {showConfirmDelete = false}
+            )
         }
     }
 }
