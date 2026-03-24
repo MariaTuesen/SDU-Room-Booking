@@ -32,7 +32,6 @@ import com.example.sduroombooking.ui.theme.AppGreen
 import com.example.sduroombooking.ui.theme.TextFieldGrey
 import com.example.sduroombooking.viewmodel.UserViewModel
 import java.util.Locale
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.navigationBars
@@ -46,7 +45,6 @@ fun SearchPeoplePage(
     val users = userViewModel.allUsers.value
     val loading = userViewModel.usersLoading.value
     val error = userViewModel.usersError.value
-    val context = LocalContext.current
 
     LaunchedEffect(Unit) {
         userViewModel.fetchAllUsers()
@@ -169,7 +167,7 @@ fun SearchPeoplePage(
                             user = user,
                             isFriend = isFriend,
                             onToggleFriend = {
-                                userViewModel.toggleFriend(context, user)
+                                userViewModel.toggleFriend(user)
                             }
                         )
                         HorizontalDivider()

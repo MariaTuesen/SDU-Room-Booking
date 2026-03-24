@@ -47,10 +47,17 @@ import com.example.sduroombooking.ui.theme.TextFieldGrey
 import com.example.sduroombooking.viewmodel.UserViewModel
 import java.util.Calendar
 import androidx.compose.foundation.layout.statusBarsPadding
+import com.example.sduroombooking.viewmodel.BookingViewModel
+import com.example.sduroombooking.viewmodel.RoomsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CreateBooking(navController: NavController, userViewModel: UserViewModel) {
+fun CreateBooking(
+    navController: NavController,
+    userViewModel: UserViewModel,
+    roomsViewModel: RoomsViewModel,
+    bookingViewModel: BookingViewModel
+) {
     val outlineShape = RoundedCornerShape(12.dp)
     val context = LocalContext.current
 
@@ -74,11 +81,11 @@ fun CreateBooking(navController: NavController, userViewModel: UserViewModel) {
     LaunchedEffect(Unit) {
         userViewModel.fetchAllUsers()
         userViewModel.fetchFriendsFromBackend()
-        userViewModel.fetchRooms()
+        roomsViewModel.fetchRooms()
     }
 
     LaunchedEffect(selectedDate, startTime, endTime) {
-        selectedDate?.let { userViewModel.fetchBookingsForDate(it) }
+        selectedDate?.let { bookingViewModel.fetchBookingsForDate(it) }
     }
 
     val friendsSnapshot = remember(userViewModel.friends) { userViewModel.friends.toList() }
@@ -120,7 +127,7 @@ fun CreateBooking(navController: NavController, userViewModel: UserViewModel) {
         }
     }
 
-    val rooms = userViewModel.allRooms.value
+    val rooms = roomsViewModel.allRooms.value
 
     val locationsFromJson: List<String> = remember(rooms) {
         rooms.map { r -> r.location.trim() }
@@ -509,7 +516,7 @@ fun CreateBooking(navController: NavController, userViewModel: UserViewModel) {
             ) {
                 Button(
                     onClick = {
-                        val all = userViewModel.allRooms.value
+                        val all = roomsViewModel.allRooms.value
                         val requiredSeats = 1 + selectedPeople.size
 
                         val wantedLocation = location.trim()
@@ -543,7 +550,7 @@ fun CreateBooking(navController: NavController, userViewModel: UserViewModel) {
         }
 
         if (searchedOnce) {
-            val bookingsToday = userViewModel.bookingsForSelectedDate.value
+            val bookingsToday = bookingViewModel.bookingsForSelectedDate.value
 
             val availableRooms = filteredRooms.filter { room ->
                 if (selectedDate == null || startTime == null || endTime == null) {
@@ -587,21 +594,25 @@ fun CreateBooking(navController: NavController, userViewModel: UserViewModel) {
                         borderColor = AppGreen,
                         canBook = canBook,
                         onBook = {
-                            userViewModel.createBooking(
-                                roomId = room.id,
-                                date = selectedDate!!,
-                                startTime = startTime!!,
-                                endTime = endTime!!,
-                                selectedOtherUserIds = selectedPeople.map { it.id },
-                                onSuccess = {
-                                    Toast.makeText(context, "Booked!", Toast.LENGTH_SHORT).show()
-                                    userViewModel.fetchBookingsForDate(selectedDate!!)
-                                },
-                                onError = { msg ->
-                                    Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
-                                    userViewModel.fetchBookingsForDate(selectedDate!!)
-                                }
-                            )
+                            val currentUserId = userViewModel.currentUser.value?.id
+                            if (currentUserId != null) {
+                                bookingViewModel.createBooking(
+                                    currentUserId = currentUserId,
+                                    roomId = room.id,
+                                    date = selectedDate!!,
+                                    startTime = startTime!!,
+                                    endTime = endTime!!,
+                                    selectedOtherUserIds = selectedPeople.map { it.id },
+                                    onSuccess = {
+                                        Toast.makeText(context, "Booked!", Toast.LENGTH_SHORT).show()
+                                        bookingViewModel.fetchBookingsForDate(selectedDate!!)
+                                    },
+                                    onError = { msg ->
+                                        Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                                        bookingViewModel.fetchBookingsForDate(selectedDate!!)
+                                    }
+                                )
+                            }
                         },
                         onMissingDateTime = {
                             Toast.makeText(context, "Please select date and time first", Toast.LENGTH_SHORT).show()

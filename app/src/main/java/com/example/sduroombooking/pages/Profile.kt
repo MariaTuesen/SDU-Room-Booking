@@ -36,18 +36,20 @@ import com.example.sduroombooking.popup.SettingsPopup
 import com.example.sduroombooking.ui.theme.AlatsiFont
 import com.example.sduroombooking.ui.theme.AppGreen
 import com.example.sduroombooking.ui.theme.TextFieldGrey
+import com.example.sduroombooking.viewmodel.NotificationsViewModel
 import com.example.sduroombooking.viewmodel.UserViewModel
 
 @Composable
 fun Profile(
     navController: NavHostController,
-    userViewModel: UserViewModel
+    userViewModel: UserViewModel,
+    notificationsViewModel: NotificationsViewModel
 ) {
     val context = LocalContext.current
     val user = userViewModel.currentUser.value
     val friends = userViewModel.friends
     val hasUnreadNotifications =
-        userViewModel.notifications.value.any { !it.read }
+        notificationsViewModel.notifications.value.any { !it.read }
 
     val photoPicker = rememberLauncherForActivityResult(
         contract = PickVisualMedia()
@@ -68,7 +70,7 @@ fun Profile(
     LaunchedEffect(user?.id) {
         if (user != null) {
             userViewModel.fetchFriendsFromBackend()
-            userViewModel.fetchNotifications()
+            notificationsViewModel.fetchNotifications(user.id)
         }
     }
 
@@ -131,7 +133,7 @@ fun Profile(
             FriendsBox(
                 friends = friends,
                 onUnfriend = { friendUser ->
-                    userViewModel.toggleFriend(context, friendUser)
+                    userViewModel.toggleFriend(friendUser)
                 },
                 modifier = Modifier.height(400.dp)
             )
@@ -206,15 +208,21 @@ fun Profile(
 
         if (showNotificationsPopup) {
             NotificationsPopup(
-                notifications = userViewModel.notifications.value,
-                loading = userViewModel.notificationsLoading.value,
-                error = userViewModel.notificationsError.value,
+                notifications = notificationsViewModel.notifications.value,
+                loading = notificationsViewModel.notificationsLoading.value,
+                error = notificationsViewModel.notificationsError.value,
                 onDismiss = {
-                    userViewModel.notifications.value
-                        .filter { !it.read }
-                        .forEach { notification ->
-                            userViewModel.markNotificationAsRead(notification.id)
-                        }
+                    val currentUserId = userViewModel.currentUser.value?.id
+                    if (currentUserId != null) {
+                        notificationsViewModel.notifications.value
+                            .filter { !it.read }
+                            .forEach { notification ->
+                                notificationsViewModel.markNotificationAsRead(
+                                    userId = currentUserId,
+                                    notificationId = notification.id
+                                )
+                            }
+                    }
 
                     showNotificationsPopup = false
                 },
@@ -223,6 +231,7 @@ fun Profile(
         }
     }
 }
+
 
 @Composable
 fun FriendsBox(

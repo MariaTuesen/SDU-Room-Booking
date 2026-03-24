@@ -36,6 +36,9 @@ import com.example.sduroombooking.pages.Profile
 import com.example.sduroombooking.pages.SearchPeoplePage
 import com.example.sduroombooking.pages.TermsAndConditions
 import com.example.sduroombooking.viewmodel.UserViewModel
+import com.example.sduroombooking.viewmodel.BookingViewModel
+import com.example.sduroombooking.viewmodel.NotificationsViewModel
+import com.example.sduroombooking.viewmodel.RoomsViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -52,6 +55,9 @@ class MainActivity : ComponentActivity() {
 fun AppNavHost() {
     val navController = rememberNavController()
     val userVM: UserViewModel = viewModel()
+    val roomsVM: RoomsViewModel = viewModel()
+    val bookingVM: BookingViewModel = viewModel()
+    val notificationsVM: NotificationsViewModel = viewModel()
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
@@ -101,7 +107,8 @@ fun AppNavHost() {
             }
 
             composable(Destination.PROFILE.route) {
-                Profile(navController = navController, userViewModel = userVM)
+                Profile(navController = navController, userViewModel = userVM, notificationsViewModel = notificationsVM
+                )
             }
 
             composable(Destination.SEARCHPEOPLE.route) {
@@ -121,7 +128,8 @@ fun AppNavHost() {
             }
 
             composable(Destination.CREATEBOOKING.route) {
-                CreateBooking(navController = navController, userViewModel = userVM)
+                CreateBooking(navController = navController, userViewModel = userVM, roomsViewModel = roomsVM, bookingViewModel = bookingVM
+                )
             }
         }
     }
