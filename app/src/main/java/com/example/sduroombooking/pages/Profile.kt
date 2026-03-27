@@ -243,7 +243,7 @@ fun FriendsBox(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
-            .background(TextFieldGrey)
+            .background(TextFieldGrey.copy(alpha=0.3f))
             .padding(vertical = 4.dp)
     ) {
         if (friends.isEmpty()) {

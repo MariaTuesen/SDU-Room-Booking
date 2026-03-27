@@ -17,6 +17,7 @@ import androidx.navigation.NavHostController
 import com.example.sduroombooking.navigation.Destination
 import com.example.sduroombooking.ui.theme.AlatsiFont
 import com.example.sduroombooking.ui.theme.AppGreen
+import com.example.sduroombooking.ui.theme.TextGrey
 import com.example.sduroombooking.ui.theme.TextFieldGrey
 import com.example.sduroombooking.viewmodel.UserViewModel
 
@@ -43,7 +44,7 @@ fun LoginScreen(
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
-                placeholder = { Text("Mail", fontFamily = AlatsiFont, color = TextFieldGrey) },
+                placeholder = { Text("Mail", fontFamily = AlatsiFont, color = TextGrey) },
                 shape = RoundedCornerShape(14.dp),
                 modifier = Modifier
                     .fillMaxWidth()
@@ -51,8 +52,8 @@ fun LoginScreen(
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = AppGreen,
                     unfocusedBorderColor = AppGreen,
-                    focusedContainerColor = Color(0xFFD9D9D9).copy(alpha = 0.3f),
-                    unfocusedContainerColor = Color(0xFFD9D9D9).copy(alpha = 0.3f)
+                    focusedContainerColor = TextFieldGrey.copy(alpha=0.3f),
+                    unfocusedContainerColor = TextFieldGrey.copy(alpha=0.3f)
                 )
             )
 
@@ -61,7 +62,7 @@ fun LoginScreen(
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
-                placeholder = { Text("Password", fontFamily = AlatsiFont, color = TextFieldGrey) },
+                placeholder = { Text("Password", fontFamily = AlatsiFont, color = TextGrey) },
                 visualTransformation = PasswordVisualTransformation(),
                 shape = RoundedCornerShape(14.dp),
                 modifier = Modifier
@@ -70,8 +71,8 @@ fun LoginScreen(
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = AppGreen,
                     unfocusedBorderColor = AppGreen,
-                    focusedContainerColor = Color(0xFFD9D9D9).copy(alpha = 0.3f),
-                    unfocusedContainerColor = Color(0xFFD9D9D9).copy(alpha = 0.3f)
+                    focusedContainerColor = TextFieldGrey.copy(alpha=0.3f),
+                    unfocusedContainerColor = TextFieldGrey.copy(alpha=0.3f)
                 )
             )
 
