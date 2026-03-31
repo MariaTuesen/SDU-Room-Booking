@@ -46,4 +46,44 @@ class NotificationsViewModel : ViewModel() {
 
     val unreadNotificationCount: Int
         get() = notifications.value.count { !it.read }
+
+    fun acceptGroupInvite(
+        userId: String,
+        notificationId: String,
+        onSuccess: (() -> Unit)? = null,
+        onError: ((String) -> Unit)? = null
+    ) {
+        viewModelScope.launch {
+            try {
+                RetrofitClient.api.acceptGroupInvite(userId, notificationId)
+                notifications.value = notifications.value.filterNot { it.id == notificationId }
+                fetchNotifications(userId)
+                onSuccess?.invoke()
+            } catch (e: Exception) {
+                onError?.invoke(e.message ?: "Failed to accept invite")
+            }
+        }
+    }
+
+    fun declineGroupInvite(
+        userId: String,
+        notificationId: String,
+        onSuccess: (() -> Unit)? = null,
+        onError: ((String) -> Unit)? = null
+    ) {
+        viewModelScope.launch {
+            try {
+                val response = RetrofitClient.api.declineGroupInvite(userId, notificationId)
+
+                if (response.isSuccessful) {
+                    notifications.value = notifications.value.filterNot { it.id == notificationId }
+                    onSuccess?.invoke()
+                } else {
+                    onError?.invoke("Decline failed: ${response.code()}")
+                }
+            } catch (e: Exception) {
+                onError?.invoke(e.message ?: "Failed to decline invite")
+            }
+        }
+    }
 }

@@ -8,6 +8,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -30,6 +31,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -39,16 +41,17 @@ import coil.request.ImageRequest
 import com.example.sduroombooking.R
 import com.example.sduroombooking.cards.BookingCard
 import com.example.sduroombooking.cards.BookingCardUiModel
+import com.example.sduroombooking.dataclasses.Group
 import com.example.sduroombooking.dataclasses.Room
 import com.example.sduroombooking.dataclasses.User
 import com.example.sduroombooking.ui.theme.AlatsiFont
 import com.example.sduroombooking.ui.theme.AppGreen
 import com.example.sduroombooking.ui.theme.TextFieldGrey
+import com.example.sduroombooking.viewmodel.BookingViewModel
+import com.example.sduroombooking.viewmodel.GroupViewModel
+import com.example.sduroombooking.viewmodel.RoomsViewModel
 import com.example.sduroombooking.viewmodel.UserViewModel
 import java.util.Calendar
-import androidx.compose.foundation.layout.statusBarsPadding
-import com.example.sduroombooking.viewmodel.BookingViewModel
-import com.example.sduroombooking.viewmodel.RoomsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -56,7 +59,8 @@ fun CreateBooking(
     navController: NavController,
     userViewModel: UserViewModel,
     roomsViewModel: RoomsViewModel,
-    bookingViewModel: BookingViewModel
+    bookingViewModel: BookingViewModel,
+    groupViewModel: GroupViewModel
 ) {
     val outlineShape = RoundedCornerShape(12.dp)
     val context = LocalContext.current
@@ -71,9 +75,14 @@ fun CreateBooking(
     var peopleExpanded by rememberSaveable { mutableStateOf(false) }
     val selectedPeople = remember { mutableStateListOf<User>() }
 
+    val selectedGroups = remember { mutableStateListOf<Group>() }
+    var groupExpanded by rememberSaveable { mutableStateOf(false) }
+    val excludedGroupMemberIds = remember { mutableStateListOf<String>() }
+
     val users = userViewModel.allUsers.value
     val loadingUsers = userViewModel.usersLoading.value
     val currentUserId = userViewModel.currentUser.value?.id
+    val groups = groupViewModel.groups
 
     var filteredRooms by rememberSaveable { mutableStateOf<List<Room>>(emptyList()) }
     var searchedOnce by rememberSaveable { mutableStateOf(false) }
@@ -84,19 +93,51 @@ fun CreateBooking(
         roomsViewModel.fetchRooms()
     }
 
+    LaunchedEffect(userViewModel.currentUser.value?.id) {
+        val userId = userViewModel.currentUser.value?.id ?: return@LaunchedEffect
+        groupViewModel.fetchGroups(userId)
+    }
+
     LaunchedEffect(selectedDate, startTime, endTime) {
         selectedDate?.let { bookingViewModel.fetchBookingsForDate(it) }
     }
 
-    val friendsSnapshot = remember(userViewModel.friends) { userViewModel.friends.toList() }
+    val friendsSnapshot = remember(userViewModel.friends) {
+        userViewModel.friends.toList()
+    }
+
+    val selectedGroupMembers = remember(
+        selectedGroups.toList(),
+        users,
+        currentUserId,
+        excludedGroupMemberIds.toList()
+    ) {
+        val memberIds = selectedGroups
+            .flatMap { it.memberIds }
+            .toSet()
+
+        users.filter { user ->
+            user.id in memberIds &&
+                    user.id != currentUserId &&
+                    user.id !in excludedGroupMemberIds
+        }
+    }
+
+    val invitedUsers = remember(selectedPeople.toList(), selectedGroupMembers) {
+        (selectedPeople.toList() + selectedGroupMembers).distinctBy { it.id }
+    }
+
+    val invitedUserIds = remember(invitedUsers) {
+        invitedUsers.map { it.id }
+    }
 
     val candidatePeople by remember(
-        peopleQuery, users, currentUserId, selectedPeople, friendsSnapshot
+        peopleQuery, users, currentUserId, selectedPeople.toList(), selectedGroupMembers, friendsSnapshot
     ) {
         derivedStateOf {
             val qRaw = peopleQuery.trim().lowercase()
             val tokens = qRaw.split("\\s+".toRegex()).filter { it.isNotBlank() }
-            val selectedIds = selectedPeople.map { it.id }.toSet()
+            val selectedIds = invitedUserIds.toSet()
 
             fun User.searchText(): String = "${fullName} ${email}".lowercase()
 
@@ -215,7 +256,9 @@ fun CreateBooking(
         item {
             Text(
                 text = "Create booking",
-                style = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.ExtraBold)
+                style = MaterialTheme.typography.headlineLarge.copy(
+                    fontWeight = FontWeight.ExtraBold
+                )
             )
         }
 
@@ -230,23 +273,27 @@ fun CreateBooking(
                         imageVector = Icons.Outlined.CalendarMonth,
                         contentDescription = "Pick date",
                         tint = AppGreen,
-                        modifier = Modifier.size(40.dp).clickable {
-                            val today = Calendar.getInstance()
-                            val maxCalendar = Calendar.getInstance().apply { add(Calendar.MONTH, 1) }
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clickable {
+                                val today = Calendar.getInstance()
+                                val maxCalendar = Calendar.getInstance().apply {
+                                    add(Calendar.MONTH, 1)
+                                }
 
-                            val dialog = DatePickerDialog(
-                                context,
-                                { _, year, month, dayOfMonth ->
-                                    selectedDate = "$dayOfMonth/${month + 1}/$year"
-                                },
-                                today.get(Calendar.YEAR),
-                                today.get(Calendar.MONTH),
-                                today.get(Calendar.DAY_OF_MONTH)
-                            )
-                            dialog.datePicker.minDate = today.timeInMillis
-                            dialog.datePicker.maxDate = maxCalendar.timeInMillis
-                            dialog.show()
-                        }
+                                val dialog = DatePickerDialog(
+                                    context,
+                                    { _, year, month, dayOfMonth ->
+                                        selectedDate = "$dayOfMonth/${month + 1}/$year"
+                                    },
+                                    today.get(Calendar.YEAR),
+                                    today.get(Calendar.MONTH),
+                                    today.get(Calendar.DAY_OF_MONTH)
+                                )
+                                dialog.datePicker.minDate = today.timeInMillis
+                                dialog.datePicker.maxDate = maxCalendar.timeInMillis
+                                dialog.show()
+                            }
                     )
 
                     selectedDate?.let {
@@ -260,53 +307,55 @@ fun CreateBooking(
                         imageVector = Icons.Outlined.AccessTime,
                         contentDescription = "Pick start and end time",
                         tint = AppGreen,
-                        modifier = Modifier.size(40.dp).clickable {
-                            val cal = Calendar.getInstance()
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clickable {
+                                val cal = Calendar.getInstance()
 
-                            TimePickerDialog(
-                                context,
-                                { _, startH, startM ->
-                                    val startTotal = startH * 60 + startM
+                                TimePickerDialog(
+                                    context,
+                                    { _, startH, startM ->
+                                        val startTotal = startH * 60 + startM
 
-                                    TimePickerDialog(
-                                        context,
-                                        { _, endH, endM ->
-                                            val endTotal = endH * 60 + endM
-                                            val duration = endTotal - startTotal
+                                        TimePickerDialog(
+                                            context,
+                                            { _, endH, endM ->
+                                                val endTotal = endH * 60 + endM
+                                                val duration = endTotal - startTotal
 
-                                            when {
-                                                endTotal <= startTotal -> {
-                                                    Toast.makeText(
-                                                        context,
-                                                        "End time must be after start time",
-                                                        Toast.LENGTH_SHORT
-                                                    ).show()
+                                                when {
+                                                    endTotal <= startTotal -> {
+                                                        Toast.makeText(
+                                                            context,
+                                                            "End time must be after start time",
+                                                            Toast.LENGTH_SHORT
+                                                        ).show()
+                                                    }
+
+                                                    duration > 240 -> {
+                                                        Toast.makeText(
+                                                            context,
+                                                            "You can only reserve up to 4 hours",
+                                                            Toast.LENGTH_SHORT
+                                                        ).show()
+                                                    }
+
+                                                    else -> {
+                                                        startTime = String.format("%02d:%02d", startH, startM)
+                                                        endTime = String.format("%02d:%02d", endH, endM)
+                                                    }
                                                 }
-
-                                                duration > 240 -> {
-                                                    Toast.makeText(
-                                                        context,
-                                                        "You can only reserve up to 4 hours",
-                                                        Toast.LENGTH_SHORT
-                                                    ).show()
-                                                }
-
-                                                else -> {
-                                                    startTime = String.format("%02d:%02d", startH, startM)
-                                                    endTime = String.format("%02d:%02d", endH, endM)
-                                                }
-                                            }
-                                        },
-                                        startH,
-                                        startM,
-                                        true
-                                    ).show()
-                                },
-                                cal.get(Calendar.HOUR_OF_DAY),
-                                cal.get(Calendar.MINUTE),
-                                true
-                            ).show()
-                        }
+                                            },
+                                            startH,
+                                            startM,
+                                            true
+                                        ).show()
+                                    },
+                                    cal.get(Calendar.HOUR_OF_DAY),
+                                    cal.get(Calendar.MINUTE),
+                                    true
+                                ).show()
+                            }
                     )
 
                     if (startTime != null && endTime != null) {
@@ -318,59 +367,141 @@ fun CreateBooking(
         }
 
         item {
-            ExposedDropdownMenuBox(
-                expanded = peopleExpanded,
-                onExpandedChange = { peopleExpanded = it }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                OutlinedTextField(
-                    value = peopleQuery,
-                    onValueChange = {
-                        peopleQuery = it
-                        peopleExpanded = true
-                    },
-                    textStyle = LocalTextStyle.current.copy(fontFamily = AlatsiFont),
-                    placeholder = { Text("Search...", fontFamily = AlatsiFont, color = TextFieldGrey) },
-                    leadingIcon = {
-                        Icon(
-                            imageVector = Icons.Default.Search,
-                            contentDescription = "Search",
-                            tint = TextFieldGrey
-                        )
-                    },
-                    singleLine = true,
-                    shape = RoundedCornerShape(14.dp),
-                    modifier = Modifier
-                        .menuAnchor()
-                        .fillMaxWidth()
-                        .border(2.dp, AppGreen, RoundedCornerShape(14.dp))
-                        .onFocusChanged { if (it.isFocused) peopleExpanded = true },
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = AppGreen,
-                        unfocusedBorderColor = AppGreen,
-                        focusedContainerColor = Color(0xFFD9D9D9).copy(alpha = 0.3f),
-                        unfocusedContainerColor = Color(0xFFD9D9D9).copy(alpha = 0.3f)
-                    )
-                )
-
-                ExposedDropdownMenu(
+                ExposedDropdownMenuBox(
                     expanded = peopleExpanded,
-                    onDismissRequest = { peopleExpanded = false }
+                    onExpandedChange = { peopleExpanded = it },
+                    modifier = Modifier.weight(1f)
                 ) {
-                    when {
-                        loadingUsers -> DropdownMenuItem(text = { Text("Loading...", fontFamily = AlatsiFont) }, onClick = {})
-                        candidatePeople.isEmpty() -> DropdownMenuItem(text = { Text("No users found", fontFamily = AlatsiFont) }, onClick = {})
-                        else -> {
-                            candidatePeople.forEach { user ->
-                                val isFriend = userViewModel.isFriend(user.id)
+                    OutlinedTextField(
+                        value = peopleQuery,
+                        onValueChange = {
+                            peopleQuery = it
+                            peopleExpanded = true
+                        },
+                        textStyle = LocalTextStyle.current.copy(fontFamily = AlatsiFont),
+                        placeholder = {
+                            Text(
+                                "Search for people...",
+                                fontFamily = AlatsiFont,
+                                color = TextFieldGrey
+                            )
+                        },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Search,
+                                contentDescription = "Search",
+                                tint = TextFieldGrey
+                            )
+                        },
+                        singleLine = true,
+                        shape = RoundedCornerShape(14.dp),
+                        modifier = Modifier
+                            .menuAnchor()
+                            .fillMaxWidth()
+                            .border(2.dp, AppGreen, RoundedCornerShape(14.dp))
+                            .onFocusChanged { if (it.isFocused) peopleExpanded = true },
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = AppGreen,
+                            unfocusedBorderColor = AppGreen,
+                            focusedContainerColor = Color(0xFFD9D9D9).copy(alpha = 0.3f),
+                            unfocusedContainerColor = Color(0xFFD9D9D9).copy(alpha = 0.3f)
+                        )
+                    )
+
+                    ExposedDropdownMenu(
+                        expanded = peopleExpanded,
+                        onDismissRequest = { peopleExpanded = false }
+                    ) {
+                        when {
+                            loadingUsers -> {
                                 DropdownMenuItem(
-                                    text = { PersonDropdownRow(user = user, isFriend = isFriend) },
-                                    onClick = {
-                                        if (selectedPeople.none { it.id == user.id }) selectedPeople.add(user)
-                                        peopleQuery = ""
-                                        peopleExpanded = true
-                                    }
+                                    text = { Text("Loading...", fontFamily = AlatsiFont) },
+                                    onClick = {}
                                 )
                             }
+
+                            candidatePeople.isEmpty() -> {
+                                DropdownMenuItem(
+                                    text = { Text("No users found", fontFamily = AlatsiFont) },
+                                    onClick = {}
+                                )
+                            }
+
+                            else -> {
+                                candidatePeople.forEach { user ->
+                                    val isFriend = userViewModel.isFriend(user.id)
+                                    DropdownMenuItem(
+                                        text = { PersonDropdownRow(user = user, isFriend = isFriend) },
+                                        onClick = {
+                                            if (selectedPeople.none { it.id == user.id }) {
+                                                selectedPeople.add(user)
+                                            }
+                                            excludedGroupMemberIds.remove(user.id)
+                                            peopleQuery = ""
+                                            peopleExpanded = true
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Box(
+                    modifier = Modifier.wrapContentSize(Alignment.Center)
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.groups),
+                        contentDescription = "Select groups",
+                        tint = Color.Black,
+                        modifier = Modifier
+                            .size(40.dp)
+                            .align(Alignment.Center)
+                            .clickable { groupExpanded = true }
+                    )
+
+                    DropdownMenu(
+                        expanded = groupExpanded,
+                        onDismissRequest = { groupExpanded = false }
+                    ) {
+                        groups.forEach { group ->
+                            val isSelected = selectedGroups.any { it.id == group.id }
+
+                            DropdownMenuItem(
+                                text = {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.SpaceBetween
+                                    ) {
+                                        Text(
+                                            text = group.name,
+                                            fontFamily = AlatsiFont
+                                        )
+
+                                        if (isSelected) {
+                                            Icon(
+                                                imageVector = Icons.Default.Star,
+                                                contentDescription = "Selected",
+                                                tint = AppGreen,
+                                                modifier = Modifier.size(18.dp)
+                                            )
+                                        }
+                                    }
+                                },
+                                onClick = {
+                                    if (isSelected) {
+                                        selectedGroups.removeAll { it.id == group.id }
+                                    } else {
+                                        selectedGroups.add(group)
+                                    }
+                                }
+                            )
                         }
                     }
                 }
@@ -383,8 +514,19 @@ fun CreateBooking(
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 contentPadding = PaddingValues(horizontal = 4.dp)
             ) {
-                items(selectedPeople, key = { it.id }) { person ->
-                    BookingPersonItemUser(user = person, onRemove = { selectedPeople.remove(person) })
+                items(invitedUsers, key = { it.id }) { person ->
+                    BookingPersonItemUser(
+                        user = person,
+                        onRemove = {
+                            selectedPeople.removeAll { it.id == person.id }
+                            if (selectedGroups.any { group -> person.id in group.memberIds }) {
+                                if (person.id !in excludedGroupMemberIds) {
+                                    excludedGroupMemberIds.add(person.id)
+                                }
+                            }
+                        },
+                        removable = true
+                    )
                 }
             }
         }
@@ -394,8 +536,14 @@ fun CreateBooking(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text("Location", style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Black))
-                Text("Building", style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Black))
+                Text(
+                    "Location",
+                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Black)
+                )
+                Text(
+                    "Building",
+                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Black)
+                )
             }
         }
 
@@ -415,7 +563,9 @@ fun CreateBooking(
                         readOnly = true,
                         enabled = locationsFromJson.isNotEmpty(),
                         placeholder = { Text("Select location") },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = locationExpanded) },
+                        trailingIcon = {
+                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = locationExpanded)
+                        },
                         shape = outlineShape,
                         colors = textFieldColors,
                         modifier = Modifier
@@ -445,7 +595,9 @@ fun CreateBooking(
 
                 ExposedDropdownMenuBox(
                     expanded = buildingExpanded,
-                    onExpandedChange = { if (buildingEnabled) buildingExpanded = !buildingExpanded },
+                    onExpandedChange = {
+                        if (buildingEnabled) buildingExpanded = !buildingExpanded
+                    },
                     modifier = Modifier.weight(1f)
                 ) {
                     OutlinedTextField(
@@ -454,7 +606,9 @@ fun CreateBooking(
                         readOnly = true,
                         enabled = buildingEnabled,
                         placeholder = { Text("Select building") },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = buildingExpanded) },
+                        trailingIcon = {
+                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = buildingExpanded)
+                        },
                         shape = outlineShape,
                         colors = textFieldColors,
                         modifier = Modifier
@@ -483,7 +637,10 @@ fun CreateBooking(
 
         item {
             if (extrasFromJson.isNotEmpty()) {
-                Text("Extra", style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Black))
+                Text(
+                    "Extra",
+                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Black)
+                )
             }
         }
 
@@ -517,11 +674,9 @@ fun CreateBooking(
                 Button(
                     onClick = {
                         val all = roomsViewModel.allRooms.value
-                        val requiredSeats = 1 + selectedPeople.size
-
+                        val requiredSeats = 1 + invitedUserIds.size
                         val wantedLocation = location.trim()
                         val wantedBuilding = building.trim()
-
                         val selectedExtraOptions = extrasFromJson.filter { it.key in selectedExtras }
 
                         filteredRooms = all.filter { r ->
@@ -536,7 +691,11 @@ fun CreateBooking(
                         searchedOnce = true
 
                         if (filteredRooms.isEmpty()) {
-                            Toast.makeText(context, "No rooms match your filters", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                context,
+                                "No rooms match your filters",
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
                     },
                     colors = buttonColors,
@@ -544,7 +703,10 @@ fun CreateBooking(
                     modifier = Modifier.height(44.dp),
                     enabled = location.isNotBlank() && building.isNotBlank() && canBook
                 ) {
-                    Text("Find room", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
+                    Text(
+                        "Find room",
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                    )
                 }
             }
         }
@@ -594,15 +756,15 @@ fun CreateBooking(
                         borderColor = AppGreen,
                         canBook = canBook,
                         onBook = {
-                            val currentUserId = userViewModel.currentUser.value?.id
-                            if (currentUserId != null) {
+                            val bookingUserId = userViewModel.currentUser.value?.id
+                            if (bookingUserId != null) {
                                 bookingViewModel.createBooking(
-                                    currentUserId = currentUserId,
+                                    currentUserId = bookingUserId,
                                     roomId = room.id,
                                     date = selectedDate!!,
                                     startTime = startTime!!,
                                     endTime = endTime!!,
-                                    selectedOtherUserIds = selectedPeople.map { it.id },
+                                    selectedOtherUserIds = invitedUserIds,
                                     onSuccess = {
                                         Toast.makeText(context, "Booked!", Toast.LENGTH_SHORT).show()
                                         bookingViewModel.fetchBookingsForDate(selectedDate!!)
@@ -615,7 +777,11 @@ fun CreateBooking(
                             }
                         },
                         onMissingDateTime = {
-                            Toast.makeText(context, "Please select date and time first", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                context,
+                                "Please select date and time first",
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
                     )
                 }
@@ -712,7 +878,8 @@ private fun PersonDropdownRow(
 @Composable
 private fun BookingPersonItemUser(
     user: User,
-    onRemove: () -> Unit
+    onRemove: () -> Unit,
+    removable: Boolean = true
 ) {
     val baseUrl = "http://10.0.2.2:3000"
     val imageUrl = user.profile_picture
@@ -763,13 +930,18 @@ private fun BookingPersonItemUser(
             )
         }
 
-        IconButton(onClick = onRemove, modifier = Modifier.size(34.dp)) {
-            Icon(
-                painter = painterResource(R.drawable.bin),
-                contentDescription = "Remove",
-                tint = AppGreen,
-                modifier = Modifier.size(20.dp)
-            )
+        if (removable) {
+            IconButton(
+                onClick = onRemove,
+                modifier = Modifier.size(34.dp)
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.bin),
+                    contentDescription = "Remove",
+                    tint = AppGreen,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
         }
     }
 }

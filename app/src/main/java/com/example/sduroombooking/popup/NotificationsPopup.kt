@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.dp
 import com.example.sduroombooking.dataclasses.NotificationItem
 import com.example.sduroombooking.ui.theme.AlatsiFont
 import com.example.sduroombooking.ui.theme.AppGreen
-import com.example.sduroombooking.ui.theme.TextFieldGrey
+import com.example.sduroombooking.ui.theme.PopupGrey
 
 @Composable
 fun NotificationsPopup(
@@ -28,7 +28,9 @@ fun NotificationsPopup(
     loading: Boolean,
     error: String?,
     onDismiss: () -> Unit,
-    onNotificationClick: (NotificationItem) -> Unit
+    onNotificationClick: (NotificationItem) -> Unit,
+    onAcceptGroupInvite: (NotificationItem) -> Unit,
+    onDeclineGroupInvite: (NotificationItem) -> Unit
 ) {
     Dialog(
         onDismissRequest = onDismiss,
@@ -42,7 +44,7 @@ fun NotificationsPopup(
                 .heightIn(min = 220.dp, max = 500.dp)
                 .padding(16.dp)
                 .border(2.dp, AppGreen, shape)
-                .background(TextFieldGrey, shape)
+                .background(PopupGrey, shape)
                 .padding(20.dp)
         ) {
             Column(modifier = Modifier.fillMaxWidth()) {
@@ -92,7 +94,9 @@ fun NotificationsPopup(
                             ) { index, notification ->
                                 NotificationRow(
                                     notification = notification,
-                                    onClick = { onNotificationClick(notification) }
+                                    onClick = { onNotificationClick(notification) },
+                                    onAcceptGroupInvite = { onAcceptGroupInvite(notification) },
+                                    onDeclineGroupInvite = { onDeclineGroupInvite(notification) }
                                 )
 
                                 if (index < notifications.lastIndex) {
@@ -112,7 +116,9 @@ fun NotificationsPopup(
 @Composable
 private fun NotificationRow(
     notification: NotificationItem,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    onAcceptGroupInvite: () -> Unit,
+    onDeclineGroupInvite: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -133,6 +139,29 @@ private fun NotificationRow(
             fontFamily = AlatsiFont,
             color = Color.Black
         )
+
+        if (notification.type == "group_invite" && !notification.read) {
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                androidx.compose.material3.Button(
+                    onClick = onAcceptGroupInvite,
+                    colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                        containerColor = AppGreen
+                    )
+                ) {
+                    Text("Accept", color = Color.Black)
+                }
+
+                androidx.compose.material3.OutlinedButton(
+                    onClick = onDeclineGroupInvite
+                ) {
+                    Text("Decline", color = Color.Black)
+                }
+            }
+        }
 
         Spacer(modifier = Modifier.height(4.dp))
     }
