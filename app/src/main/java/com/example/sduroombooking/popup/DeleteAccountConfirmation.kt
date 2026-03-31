@@ -1,5 +1,6 @@
 package com.example.sduroombooking.popup
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -20,7 +21,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.example.sduroombooking.ui.theme.AlatsiFont
-import com.example.sduroombooking.ui.theme.TextFieldGrey
+import com.example.sduroombooking.ui.theme.AppGreen
+import com.example.sduroombooking.ui.theme.PopupGrey
 
 @Composable
 fun DeleteAccountConfirmationPopup(
@@ -43,7 +45,7 @@ fun DeleteAccountConfirmationPopup(
                 .fillMaxWidth(0.9f)
                 .padding(16.dp)
                 .border(2.dp, deleteRed, shape)
-                .background(TextFieldGrey, shape)
+                .background(PopupGrey, shape)
                 .padding(24.dp)
         ) {
             Column(
@@ -103,7 +105,11 @@ fun DeleteAccountConfirmationPopup(
                 ) {
                     OutlinedButton(
                         onClick = onDismiss,
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = AppGreen
+                        ),
+                        border = BorderStroke(1.dp, AppGreen)
                     ) {
                         Text("Cancel", fontFamily = AlatsiFont)
                     }
