@@ -105,7 +105,7 @@ fun AppNavHost() {
             }
 
             composable(Destination.HOME.route) {
-                HomePage(navController = navController, userVM = userVM)
+                HomePage(navController = navController, userVM = userVM, bookingVM = bookingVM, roomsVM = roomsVM)
             }
 
             composable(Destination.PROFILE.route) {

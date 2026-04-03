@@ -27,47 +27,8 @@ class UserViewModel : ViewModel() {
 
     private val _friends = mutableStateListOf<User>()
     val friends: List<User> get() = _friends
-    var allRooms = mutableStateOf<List<com.example.sduroombooking.dataclasses.Room>>(emptyList())
-
-    var notifications = mutableStateOf<List<NotificationItem>>(emptyList())
-    var notificationsLoading = mutableStateOf(false)
-    var notificationsError = mutableStateOf<String?>(null)
 
 
-    fun fetchNotifications() {
-        val me = currentUser.value ?: return
-
-        viewModelScope.launch {
-            notificationsLoading.value = true
-            notificationsError.value = null
-            try {
-                notifications.value = RetrofitClient.api.getNotifications(me.id)
-            } catch (e: Exception) {
-                notificationsError.value = "Failed to fetch notifications: ${e.message}"
-                notifications.value = emptyList()
-            } finally {
-                notificationsLoading.value = false
-            }
-        }
-    }
-
-    fun markNotificationAsRead(notificationId: String) {
-        val me = currentUser.value ?: return
-
-        viewModelScope.launch {
-            try {
-                RetrofitClient.api.markNotificationAsRead(me.id, notificationId)
-                notifications.value = notifications.value.map {
-                    if (it.id == notificationId) it.copy(read = true) else it
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
-    }
-
-    val unreadNotificationCount: Int
-        get() = notifications.value.count { !it.read }
 
     fun signup(
         fullName: String,
@@ -145,7 +106,7 @@ class UserViewModel : ViewModel() {
 
     fun isFriend(userId: String): Boolean = _friends.any { it.id == userId }
 
-    fun toggleFriend(context: Context, user: User) {
+    fun toggleFriend( user: User) {
         val me = currentUser.value ?: return
 
         viewModelScope.launch {

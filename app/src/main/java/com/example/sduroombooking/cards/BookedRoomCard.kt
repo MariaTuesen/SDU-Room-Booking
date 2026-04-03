@@ -68,7 +68,7 @@ fun BookedRoomCard(
                 Icon(
                     painter = painterResource(R.drawable.edit),
                     contentDescription = "Edit",
-                    modifier = Modifier.size(50.dp),
+                    modifier = Modifier.size(35.dp),
                     tint = Color.Black
                 )
             }

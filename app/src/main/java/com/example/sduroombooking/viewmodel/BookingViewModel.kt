@@ -93,6 +93,7 @@ class BookingViewModel : ViewModel() {
     fun updateBookingParticipants(
         booking: Booking,
         newUSerIds: List<String>,
+        currentUserId: String,
         onSuccess: () -> Unit
     )
     {
@@ -102,7 +103,7 @@ class BookingViewModel : ViewModel() {
 
                 RetrofitClient.api.updateBooking(booking.id, updatedBooking)
 
-                fetchUserBookings()
+                fetchUserBookings(currentUserId)
 
                 onSuccess()
             } catch (e: Exception){
@@ -111,10 +112,8 @@ class BookingViewModel : ViewModel() {
         }
     }
 
-    fun fetchUserBookings()
+    fun fetchUserBookings(userId: String)
     {
-        val userId = currentUser.value?.id ?: return
-
         viewModelScope.launch{
             bookingsLoading.value = true
             try
@@ -124,7 +123,7 @@ class BookingViewModel : ViewModel() {
             } catch (e: Exception)
             {
                 e.printStackTrace()
-                bookingsError.value = "Couldn't load you booking"
+                bookingsError.value = "Couldn't load your booking"
             } finally
             {
                 bookingsLoading.value = false

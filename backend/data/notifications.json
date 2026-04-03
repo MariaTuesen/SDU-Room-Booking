@@ -1,1 +1,46 @@
-[]
+[
+  {
+    "id": "c2bbdcdd-f399-4714-92fe-524c888cc818",
+    "userId": "39673d52-c0a1-4b37-8692-2532480157a8",
+    "title": "New booking",
+    "message": "Sofie Bergquist Madsen added you to a booking on 22/4/2026 from 12:00 to 14:00",
+    "createdAt": "2026-04-03T23:22:29.963Z",
+    "expiresAt": "22/4/2026 14:00",
+    "read": false,
+    "type": "booking_invite",
+    "bookingId": "ad401617-fa1f-4fbd-9eb0-254a6bb674e4"
+  },
+  {
+    "id": "c29fc98c-e0a8-4684-af18-f7dfa84f200e",
+    "userId": "39673d52-c0a1-4b37-8692-2532480157a8",
+    "title": "New booking",
+    "message": "Sofie Bergquist Madsen added you to a booking on 22/4/2026 from 12:00 to 14:00",
+    "createdAt": "2026-04-03T23:22:31.228Z",
+    "expiresAt": "22/4/2026 14:00",
+    "read": false,
+    "type": "booking_invite",
+    "bookingId": "78af7fbb-88c5-4eee-9ae2-f168dea17bd5"
+  },
+  {
+    "id": "b429fb85-1040-4edb-a80d-c07446ddf585",
+    "userId": "39673d52-c0a1-4b37-8692-2532480157a8",
+    "title": "New booking",
+    "message": "Sofie Bergquist Madsen added you to a booking on 22/4/2026 from 12:00 to 14:00",
+    "createdAt": "2026-04-03T23:22:32.003Z",
+    "expiresAt": "22/4/2026 14:00",
+    "read": false,
+    "type": "booking_invite",
+    "bookingId": "17c7db7c-8e1a-42e3-ad68-221ad2a221ed"
+  },
+  {
+    "id": "90d7e7b5-def5-4907-b1b8-cbfa898a5b46",
+    "userId": "39673d52-c0a1-4b37-8692-2532480157a8",
+    "title": "New booking",
+    "message": "Sofie Bergquist Madsen added you to a booking on 22/4/2026 from 12:00 to 14:00",
+    "createdAt": "2026-04-03T23:22:32.644Z",
+    "expiresAt": "22/4/2026 14:00",
+    "read": false,
+    "type": "booking_invite",
+    "bookingId": "e99aea91-76e6-4a22-b7c7-a10aeba3c772"
+  }
+]

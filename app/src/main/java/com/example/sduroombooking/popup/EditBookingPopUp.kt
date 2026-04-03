@@ -79,6 +79,9 @@ import com.example.sduroombooking.dataclasses.Booking
 import com.example.sduroombooking.dataclasses.User
 import com.example.sduroombooking.ui.theme.AppGreen
 import com.example.sduroombooking.ui.theme.TextFieldGrey
+import com.example.sduroombooking.viewmodel.BookingViewModel
+import com.example.sduroombooking.viewmodel.UserViewModel
+
 data class EditBookingPopUpUiModel(
     val roomDbId: Int,
     val roomName: String,
@@ -96,7 +99,8 @@ data class EditBookingPopUpUiModel(
 fun EditBookingPopUp(
     model: EditBookingPopUpUiModel,
     booking: Booking,
-    userVM: com.example.sduroombooking.viewmodel.UserViewModel,
+    userVM: UserViewModel,
+    bookingVM: BookingViewModel,
     onDismiss: () -> Unit
 
     )
@@ -109,9 +113,9 @@ fun EditBookingPopUp(
     var showReportIssue by remember { mutableStateOf(false) }
 
     val allUsers = userVM.allUsers.value
-    val participants by remember(booking.id, userVM.currentUserBookings.value, allUsers) {
+    val participants by remember(booking.id, bookingVM.currentUserBookings.value, allUsers) {
         derivedStateOf {
-            val freshBooking = userVM.currentUserBookings.value.find { it.id == booking.id }
+            val freshBooking = bookingVM.currentUserBookings.value.find { it.id == booking.id }
             val idsToShow = freshBooking?.userIds ?: booking.userIds
             allUsers.filter { it.id in idsToShow }
         }
@@ -326,13 +330,20 @@ fun EditBookingPopUp(
 
                                             }
                                         },
-                                    onClick = {
-                                        val newUserList = booking.userIds + user.id
-                                        userVM.updateBookingParticipants(booking, newUserList)
+                                    onClick =
                                         {
-                                        }
-                                        peopleQuery = "";
-                                        peopleExpanded = false
+                                        val newUserList = booking.userIds + user.id
+                                        val myId = userVM.currentUser.value?.id ?: ""
+
+                                        bookingVM.updateBookingParticipants(
+                                            booking = booking,
+                                            newUSerIds = newUserList,
+                                            currentUserId = myId,
+                                            onSuccess = {
+                                                peopleQuery = ""
+                                                peopleExpanded = false
+                                            }
+                                        )
                                     }
                                 )
                             }
@@ -356,7 +367,14 @@ fun EditBookingPopUp(
                                     user = user,
                                     onRemove = {
                                         val newList = booking.userIds.filter { it != user.id }
-                                        userVM.updateBookingParticipants(booking, newList) { }
+                                        val myId = userVM.currentUser.value?.id ?: ""
+
+                                        bookingVM.updateBookingParticipants(
+                                            booking = booking,
+                                            newUSerIds = newList,
+                                            currentUserId = myId,
+                                            onSuccess = { }
+                                        )
                                     }
                                 )
                             }
@@ -392,10 +410,12 @@ fun EditBookingPopUp(
             {
                 ConfirmDeletePopUp(
                     onConfirm = {
-                        userVM.deleteBooking(
+                        val myId = userVM.currentUser.value?.id ?: ""
+
+                        bookingVM.deleteBooking(
                             booking.id,
                             onSuccess = {
-                                userVM.fetchUserBookings()
+                                bookingVM.fetchUserBookings(myId)
                                 showConfirmDelete = false
                                 onDismiss()
                             },

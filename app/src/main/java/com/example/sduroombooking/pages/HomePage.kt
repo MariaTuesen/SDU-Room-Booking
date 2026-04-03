@@ -9,29 +9,26 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
-import com.example.sduroombooking.bars.NavigationBar
 import com.example.sduroombooking.cards.BookedRoomCard
 import com.example.sduroombooking.cards.BookedRoomUiModel
-import com.example.sduroombooking.navigation.Destination
 import com.example.sduroombooking.popup.EditBookingPopUp
 import com.example.sduroombooking.popup.EditBookingPopUpUiModel
+import com.example.sduroombooking.viewmodel.BookingViewModel
+import com.example.sduroombooking.viewmodel.RoomsViewModel
 import com.example.sduroombooking.viewmodel.UserViewModel
-import java.lang.reflect.Executable
 import kotlin.String
 
 @Composable
-fun HomePage(navController: NavHostController, userVM: UserViewModel)
+fun HomePage(navController: NavHostController, userVM: UserViewModel, bookingVM: BookingViewModel, roomsVM: RoomsViewModel)
 {
-    val rooms by userVM.allRooms
+    val rooms by roomsVM.allRooms
     val currentUser = userVM.currentUser.value
-    val userBookings by userVM.currentUserBookings
+    val userBookings by bookingVM.currentUserBookings
 
     var showPopup by remember { mutableStateOf(false) }
     var selectedId by remember { mutableStateOf<String?>(null) }
@@ -42,8 +39,10 @@ fun HomePage(navController: NavHostController, userVM: UserViewModel)
 
     LaunchedEffect(Unit)
     {
-        userVM.fetchRooms()
-        userVM.fetchUserBookings()
+        roomsVM.fetchRooms()
+        currentUser?.id?.let { id ->
+            bookingVM.fetchUserBookings(id)
+        }
     }
 
     Box(modifier = Modifier.fillMaxSize())
@@ -129,6 +128,7 @@ fun HomePage(navController: NavHostController, userVM: UserViewModel)
                         },
                         booking = selectedBooking,
                         userVM = userVM,
+                        bookingVM = bookingVM
                     )
                 }
             }
