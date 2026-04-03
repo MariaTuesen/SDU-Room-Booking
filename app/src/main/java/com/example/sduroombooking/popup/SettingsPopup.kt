@@ -18,17 +18,18 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.unit.dp
 import com.example.sduroombooking.ui.theme.AppGreen
-import com.example.sduroombooking.ui.theme.TextFieldGrey
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.wrapContentHeight
 import com.example.sduroombooking.ui.theme.AlatsiFont
 import androidx.compose.foundation.border
+import com.example.sduroombooking.ui.theme.PopupGrey
 
 @Composable
 fun SettingsPopup(
     onDismiss: () -> Unit,
-    onDeleteAccount: () -> Unit,
-    onTerms: () -> Unit
+    onDeleteAccountClick: () -> Unit,
+    onTerms: () -> Unit,
+    onLogoutClick: () -> Unit
 ) {
     Dialog(
         onDismissRequest = onDismiss,
@@ -42,13 +43,23 @@ fun SettingsPopup(
                 .padding(16.dp)
                 .wrapContentHeight()
                 .border(2.dp, AppGreen, shape)
-                .background(TextFieldGrey, shape)
+                .background(PopupGrey, shape)
                 .padding(24.dp),
             contentAlignment = Alignment.Center
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Button(
-                    onClick = onDeleteAccount,
+                    onClick = onLogoutClick,
+                    colors = ButtonDefaults.buttonColors(containerColor = AppGreen),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text("Logout", color = Color.Black, fontFamily = AlatsiFont)
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Button(
+                    onClick = onDeleteAccountClick,
                     colors = ButtonDefaults.buttonColors(containerColor = AppGreen),
                     shape = RoundedCornerShape(12.dp)
                 ) {

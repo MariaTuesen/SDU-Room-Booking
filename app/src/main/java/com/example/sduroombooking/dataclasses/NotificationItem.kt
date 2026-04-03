@@ -8,5 +8,7 @@ data class NotificationItem(
     val createdAt: String,
     val read: Boolean = false,
     val type: String? = null,
-    val bookingId: String? = null
+    val bookingId: String? = null,
+    val groupId: String? = null,
+    val invitedByUserId: String? = null
 )

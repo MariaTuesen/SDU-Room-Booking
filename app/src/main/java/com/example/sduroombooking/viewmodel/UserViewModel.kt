@@ -237,21 +237,8 @@ class UserViewModel : ViewModel() {
             }
         }
     }
-    fun fetchRooms() {
-        viewModelScope.launch {
-            roomsLoading.value = true
-            roomsError.value = null
-            try {
-                val rooms = RetrofitClient.api.getRooms()
-                allRooms.value = rooms
-            } catch (e: Exception) {
-                roomsError.value = "Failed to fetch rooms: ${e.message}"
-            } finally {
-                roomsLoading.value = false
-            }
-        }
-    }
-    fun UserViewModel.searchUsers(
+
+    fun searchUsers(
         query: String,
         users: List<User>,
         currentUserId: String?,

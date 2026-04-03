@@ -4,39 +4,42 @@ import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.runtime.*
-import androidx.compose.ui.platform.LocalContext
-import androidx.core.content.ContextCompat
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.only
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.*
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.sduroombooking.bars.HeaderBar
 import com.example.sduroombooking.bars.NavigationBar
 import com.example.sduroombooking.navigation.Destination
 import com.example.sduroombooking.pages.CreateAccount
+import com.example.sduroombooking.pages.CreateBooking
 import com.example.sduroombooking.pages.HomePage
 import com.example.sduroombooking.pages.LoginScreen
 import com.example.sduroombooking.pages.Profile
 import com.example.sduroombooking.pages.SearchPeoplePage
 import com.example.sduroombooking.pages.TermsAndConditions
 import com.example.sduroombooking.viewmodel.UserViewModel
-import com.example.sduroombooking.pages.CreateBooking
+import com.example.sduroombooking.viewmodel.BookingViewModel
+import com.example.sduroombooking.viewmodel.NotificationsViewModel
+import com.example.sduroombooking.viewmodel.RoomsViewModel
+import com.example.sduroombooking.viewmodel.GroupViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -53,27 +56,36 @@ class MainActivity : ComponentActivity() {
 fun AppNavHost() {
     val navController = rememberNavController()
     val userVM: UserViewModel = viewModel()
+    val roomsVM: RoomsViewModel = viewModel()
+    val bookingVM: BookingViewModel = viewModel()
+    val notificationsVM: NotificationsViewModel = viewModel()
+    val groupVM: GroupViewModel = viewModel()
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
-
-    val routesWithNavbar = listOf(
+    val showNavbar = when (currentRoute) {
         Destination.HOME.route,
         Destination.PROFILE.route,
         Destination.SEARCHPEOPLE.route,
-        Destination.CREATEBOOKING.route
-    )
+        Destination.CREATEBOOKING.route -> true
+
+        Destination.TERMSANDCONDITIONS.route ->
+            navBackStackEntry?.arguments?.getBoolean("showNavbar") ?: false
+
+        else -> false
+    }
 
     RequestPermissionsOnFirstLaunch()
 
     LaunchedEffect(Unit) {
         userVM.fetchAllUsers()
     }
+
     Scaffold(
         contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom),
         bottomBar = {
-            if (currentRoute in routesWithNavbar) {
+            if (showNavbar) {
                 NavigationBar(navController = navController, userViewModel = userVM)
             }
         }
@@ -97,18 +109,29 @@ fun AppNavHost() {
             }
 
             composable(Destination.PROFILE.route) {
-                Profile(navController = navController, userViewModel = userVM)
+                Profile(navController = navController, userViewModel = userVM, notificationsViewModel = notificationsVM, groupViewModel = groupVM
+                )
             }
 
             composable(Destination.SEARCHPEOPLE.route) {
                 SearchPeoplePage(navController = navController, userViewModel = userVM)
             }
-            composable(Destination.TERMSANDCONDITIONS.route) {
+
+            composable(
+                route = Destination.TERMSANDCONDITIONS.route,
+                arguments = listOf(
+                    navArgument("showNavbar") {
+                        type = NavType.BoolType
+                        defaultValue = false
+                    }
+                )
+            ) {
                 TermsAndConditions(navController = navController, userViewModel = userVM)
             }
 
             composable(Destination.CREATEBOOKING.route) {
-                CreateBooking(navController = navController, userViewModel = userVM)
+                CreateBooking(navController = navController, userViewModel = userVM, roomsViewModel = roomsVM, bookingViewModel = bookingVM,groupViewModel = groupVM
+                )
             }
         }
     }

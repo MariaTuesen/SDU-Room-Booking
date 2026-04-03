@@ -17,6 +17,9 @@ import com.example.sduroombooking.dataclasses.Booking
 import com.example.sduroombooking.dataclasses.CreateBookingRequest
 import retrofit2.http.Query
 import com.example.sduroombooking.dataclasses.NotificationItem
+import com.example.sduroombooking.dataclasses.Group
+import com.example.sduroombooking.dataclasses.CreateGroupRequest
+import com.example.sduroombooking.dataclasses.GroupInviteRequest
 
 data class SignupResponse(
     val message: String,
@@ -90,4 +93,43 @@ interface ApiService {
         @Path("id") id: String,
         @Body booking: Booking
     ): Booking
+
+    @GET("users/{id}/groups")
+    suspend fun getGroups(
+        @Path("id") id: String
+    ): List<Group>
+
+    @POST("groups")
+    suspend fun createGroup(
+        @Body req: CreateGroupRequest
+    ): Group
+
+    @POST("groups/{groupId}/invite")
+    suspend fun inviteToGroup(
+        @Path("groupId") groupId: String,
+        @Body req: GroupInviteRequest
+    ): Response<Unit>
+
+    @POST("users/{id}/notifications/{notificationId}/accept-group-invite")
+    suspend fun acceptGroupInvite(
+        @Path("id") userId: String,
+        @Path("notificationId") notificationId: String
+    ): Group
+
+    @GET("groups/{groupId}")
+    suspend fun getGroupById(
+        @Path("groupId") groupId: String
+    ): Group
+
+    @DELETE("groups/{groupId}/members/{userId}")
+    suspend fun leaveGroup(
+        @Path("groupId") groupId: String,
+        @Path("userId") userId: String
+    ): Response<Unit>
+
+    @POST("notifications/{userId}/{notificationId}/decline")
+    suspend fun declineGroupInvite(
+        @Path("userId") userId: String,
+        @Path("notificationId") notificationId: String
+    ): Response<Unit>
 }

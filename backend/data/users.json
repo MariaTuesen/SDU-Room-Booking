@@ -19,5 +19,61 @@
     "email": "sofim23@student.sdu.dk",
     "password": "123",
     "profile_picture": null
+  },
+  {
+    "id": "f5985a82-cf38-4711-9c95-0ad384816849",
+    "fullName": "Anna Marie Jensen",
+    "email": "anjen21@student.sdu.dk",
+    "password": "123",
+    "profile_picture": "/uploads/AnnaMarieJensen.png"
+  },
+  {
+    "id": "2bfbdd9a-e12f-48ef-b536-e0de47ecc938",
+    "fullName": "Emma Sofie Nielsen",
+    "email": "emnie23@student.sdu.dk",
+    "password": "123",
+    "profile_picture": "/uploads/EmmaSofieNielsen.png"
+  },
+  {
+    "id": "2564d4e3-75ff-4b60-af71-b69d475496da",
+    "fullName": "Clara Sofie Amalie Hansen",
+    "email": "clhan25@student.sdu.dk",
+    "password": "123",
+    "profile_picture": null
+  },
+  {
+    "id": "baf75dd1-bac6-4517-9d84-82dbf897696a",
+    "fullName": "Sofia Pedersen",
+    "email": "soped21@student.sdu.dk",
+    "password": "123",
+    "profile_picture": "/uploads/SofiaPedersen.png"
+  },
+  {
+    "id": "7f41d648-8a4d-43af-b42e-a0e4260cf517",
+    "fullName": "William August Knudsen",
+    "email": "wiknu19@student.sdu.dk",
+    "password": "123",
+    "profile_picture": "/uploads/WilliamAugustKnudsen.png"
+  },
+  {
+    "id": "16e0659d-d02d-44c1-b1f7-77c6ca2c8b8f",
+    "fullName": "Noah Holm",
+    "email": "nohol23@student.sdu.dk",
+    "password": "123",
+    "profile_picture": "/uploads/NoahHolm.png"
+  },
+  {
+    "id": "a60ae567-c24e-4971-bcb8-e3d433b4d0dc",
+    "fullName": "Emil Alexander Johan Dahl",
+    "email": "emdah25@student.sdu.dk",
+    "password": "123",
+    "profile_picture": "/uploads/EmilAlexanderJohanDahl.png"
+  },
+  {
+    "id": "0f285929-c0a8-4747-9f6e-0fefb2e389b1",
+    "fullName": "Clara Pedersen",
+    "email": "clped25@student.sdu.dk",
+    "password": "123",
+    "profile_picture": null
   }
 ]

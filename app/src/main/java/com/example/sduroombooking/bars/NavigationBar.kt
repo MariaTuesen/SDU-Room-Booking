@@ -194,4 +194,3 @@ fun NavigationBar(navController: NavHostController, userViewModel: UserViewModel
         }
     }
 }
-

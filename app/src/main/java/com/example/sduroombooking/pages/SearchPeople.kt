@@ -31,6 +31,10 @@ import com.example.sduroombooking.ui.theme.AlatsiFont
 import com.example.sduroombooking.ui.theme.AppGreen
 import com.example.sduroombooking.ui.theme.TextFieldGrey
 import com.example.sduroombooking.viewmodel.UserViewModel
+import java.util.Locale
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.navigationBars
 
 @Composable
 fun SearchPeoplePage(
@@ -41,7 +45,6 @@ fun SearchPeoplePage(
     val users = userViewModel.allUsers.value
     val loading = userViewModel.usersLoading.value
     val error = userViewModel.usersError.value
-    val context = LocalContext.current
 
     LaunchedEffect(Unit) {
         userViewModel.fetchAllUsers()
@@ -51,14 +54,21 @@ fun SearchPeoplePage(
     val currentUserId = userViewModel.currentUser.value?.id
 
     val filteredUsers = remember(query, users, currentUserId) {
-        val q = query.trim().lowercase()
+        val q = query.trim().lowercase(Locale.getDefault())
+
         users
+            .asSequence()
             .filter { it.id != currentUserId }
+            .sortedBy { it.fullName.trim().lowercase(Locale.getDefault()) }
             .filter { user ->
-                q.isBlank() ||
-                        user.fullName.lowercase().contains(q) ||
-                        user.email.lowercase().contains(q)
+                if (q.isBlank()) {
+                    true
+                } else {
+                    user.fullName.trim().lowercase(Locale.getDefault()).startsWith(q) ||
+                            user.email.trim().lowercase(Locale.getDefault()).startsWith(q)
+                }
             }
+            .toList()
     }
 
     Column(
@@ -87,9 +97,7 @@ fun SearchPeoplePage(
             OutlinedTextField(
                 value = query,
                 onValueChange = { query = it },
-                textStyle = LocalTextStyle.current.copy(
-                    fontFamily = AlatsiFont
-                ),
+                textStyle = LocalTextStyle.current.copy(fontFamily = AlatsiFont),
                 placeholder = {
                     Text(
                         "Search...",
@@ -131,16 +139,26 @@ fun SearchPeoplePage(
             }
 
             error != null -> {
-                Text(
-                    text = error,
-                    color = Color.Red,
-                    fontFamily = AlatsiFont
-                )
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = error,
+                        color = Color.Red,
+                        fontFamily = AlatsiFont
+                    )
+                }
             }
 
             else -> {
                 LazyColumn(
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    contentPadding = PaddingValues(
+                        bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() + 85.dp
+                    )
                 ) {
                     items(filteredUsers, key = { it.id }) { user ->
                         val isFriend = userViewModel.isFriend(user.id)
@@ -149,7 +167,7 @@ fun SearchPeoplePage(
                             user = user,
                             isFriend = isFriend,
                             onToggleFriend = {
-                                userViewModel.toggleFriend(context, user)
+                                userViewModel.toggleFriend(user)
                             }
                         )
                         HorizontalDivider()

@@ -9,7 +9,9 @@ const fs = require('fs');
 
 const { readFriendsFile, writeFriendsFile, uniq } = require('./models/FriendsStore');
 const { readBookingsFile, writeBookingsFile, hasConflict } = require('./models/BookingsStore');
-const {readNotificationsFile,writeNotificationsFile,removeExpiredNotifications} = require('./models/NotificationsStore');
+const { readNotificationsFile, writeNotificationsFile, removeExpiredNotifications } = require('./models/NotificationsStore');
+const { readGroupsFile, writeGroupsFile } = require('./models/GroupsStore');
+
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
@@ -74,6 +76,51 @@ function persistUserProfilePicture(userId, profilePath) {
   usersArray[idx].profile_picture = profilePath;
 
   fs.writeFileSync(usersFilePath, JSON.stringify(data, null, 2), 'utf8');
+}
+
+function removeGroupInviteNotifications(groupId) {
+  const notifications = readNotificationsFile();
+
+  const filtered = notifications.filter(
+    n => !(n.type === 'group_invite' && n.groupId === groupId)
+  );
+
+  writeNotificationsFile(filtered);
+}
+
+function removeGroupInviteNotificationById(notificationId) {
+  const notifications = readNotificationsFile();
+  const filtered = notifications.filter(n => n.id !== notificationId);
+  writeNotificationsFile(filtered);
+}
+
+function normalizeGroup(group) {
+  if (Array.isArray(group.participants)) {
+    return {
+      ...group,
+      participants: group.participants.map(p => ({
+        userId: p.userId,
+        status: p.status || 'pending'
+      }))
+    };
+  }
+
+  const memberIds = Array.isArray(group.memberIds) ? group.memberIds : [];
+
+  return {
+    id: group.id,
+    name: group.name,
+    participants: memberIds.map(userId => ({
+      userId,
+      status: 'accepted'
+    }))
+  };
+}
+
+function getNormalizedGroupsData() {
+  const groupsData = readGroupsFile();
+  groupsData.groups = (groupsData.groups || []).map(normalizeGroup);
+  return groupsData;
 }
 
 app.post('/auth/signup', (req, res) => {
@@ -230,6 +277,305 @@ app.delete('/users/:id/friends/:friendId', async (req, res) => {
   }
 });
 
+app.post('/groups', (req, res) => {
+  try {
+    const { name, creatorId, invitedUserIds } = req.body;
+
+    if (!name || !creatorId) {
+      return res.status(400).json({ message: 'Missing group name or creatorId' });
+    }
+
+    const users = usersDB.select({}) || [];
+    const creator = users.find(u => u.id === creatorId);
+
+    if (!creator) {
+      return res.status(404).json({ message: 'Creator not found' });
+    }
+
+    const groupsData = getNormalizedGroupsData();
+    const notifications = readNotificationsFile();
+
+    const uniqueInvites = Array.isArray(invitedUserIds)
+      ? [...new Set(invitedUserIds)].filter(id => id !== creatorId)
+      : [];
+
+    const newGroup = {
+      id: uuidv4(),
+      name: name.trim(),
+      participants: [
+        { userId: creatorId, status: 'accepted' },
+        ...uniqueInvites.map(id => ({
+          userId: id,
+          status: 'pending'
+        }))
+      ]
+    };
+
+    groupsData.groups.push(newGroup);
+    writeGroupsFile(groupsData);
+
+    for (const invitedUserId of uniqueInvites) {
+      notifications.push({
+        id: uuidv4(),
+        userId: invitedUserId,
+        title: 'Group invite',
+        message: `${creator.fullName} invited you to join "${newGroup.name}"`,
+        createdAt: new Date().toISOString(),
+        read: false,
+        type: 'group_invite',
+        groupId: newGroup.id,
+        invitedByUserId: creatorId
+      });
+    }
+
+    writeNotificationsFile(notifications);
+
+    return res.status(201).json(newGroup);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Failed to create group' });
+  }
+});
+
+app.get('/users/:id/groups', (req, res) => {
+  try {
+    const userId = req.params.id;
+    const groupsData = getNormalizedGroupsData();
+
+    const userGroups = groupsData.groups.filter(group =>
+      (group.participants || []).some(
+        p => p.userId === userId && p.status === 'accepted'
+      )
+    );
+
+    writeGroupsFile(groupsData);
+    return res.json(userGroups);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Failed to fetch groups' });
+  }
+});
+
+app.post('/groups/:groupId/invite', (req, res) => {
+  try {
+    const { groupId } = req.params;
+    const { invitedUserId, invitedByUserId } = req.body;
+
+    if (!invitedUserId || !invitedByUserId) {
+      return res.status(400).json({ message: 'Missing invitedUserId or invitedByUserId' });
+    }
+
+    const groupsData = getNormalizedGroupsData();
+    const notifications = readNotificationsFile();
+    const users = usersDB.select({}) || [];
+
+    const group = groupsData.groups.find(g => g.id === groupId);
+    if (!group) {
+      return res.status(404).json({ message: 'Group not found' });
+    }
+
+    if (!Array.isArray(group.participants)) {
+      group.participants = [];
+    }
+
+    const inviterIsAccepted = group.participants.some(
+      p => p.userId === invitedByUserId && p.status === 'accepted'
+    );
+
+    if (!inviterIsAccepted) {
+      return res.status(403).json({ message: 'Only accepted group members can invite others' });
+    }
+
+    const existingParticipant = group.participants.find(p => p.userId === invitedUserId);
+    if (existingParticipant && existingParticipant.status !== 'declined') {
+      return res.status(400).json({ message: 'User is already in the group or already invited' });
+    }
+
+    const inviter = users.find(u => u.id === invitedByUserId);
+
+    if (existingParticipant && existingParticipant.status === 'declined') {
+      existingParticipant.status = 'pending';
+    } else {
+      group.participants.push({
+        userId: invitedUserId,
+        status: 'pending'
+      });
+    }
+
+    notifications.push({
+      id: uuidv4(),
+      userId: invitedUserId,
+      title: 'Group invite',
+      message: `${inviter?.fullName || 'Someone'} invited you to join "${group.name}"`,
+      createdAt: new Date().toISOString(),
+      read: false,
+      type: 'group_invite',
+      groupId: group.id,
+      invitedByUserId
+    });
+
+    writeGroupsFile(groupsData);
+    writeNotificationsFile(notifications);
+
+    return res.sendStatus(204);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Failed to invite user to group' });
+  }
+});
+
+app.post('/users/:id/notifications/:notificationId/accept-group-invite', (req, res) => {
+  try {
+    const { id: userId, notificationId } = req.params;
+
+    const notifications = readNotificationsFile();
+    const groupsData = getNormalizedGroupsData();
+
+    const notificationIndex = notifications.findIndex(
+      n =>
+        n.id === notificationId &&
+        n.userId === userId &&
+        n.type === 'group_invite'
+    );
+
+    if (notificationIndex === -1) {
+      return res.status(404).json({ message: 'Group invite notification not found' });
+    }
+
+    const notification = notifications[notificationIndex];
+    const group = groupsData.groups.find(g => g.id === notification.groupId);
+
+    if (!group) {
+      notifications.splice(notificationIndex, 1);
+      writeNotificationsFile(notifications);
+      return res.status(404).json({ message: 'This group no longer exists' });
+    }
+
+    if (!Array.isArray(group.participants)) {
+      group.participants = [];
+    }
+
+    const participant = group.participants.find(p => p.userId === userId);
+
+    if (participant) {
+      participant.status = 'accepted';
+    } else {
+      group.participants.push({
+        userId,
+        status: 'accepted'
+      });
+    }
+
+    notifications.splice(notificationIndex, 1);
+
+    writeGroupsFile(groupsData);
+    writeNotificationsFile(notifications);
+
+    return res.json(group);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Failed to accept group invite' });
+  }
+});
+
+app.post('/notifications/:userId/:notificationId/decline', (req, res) => {
+  try {
+    const { userId, notificationId } = req.params;
+
+    const notifications = readNotificationsFile();
+    const groupsData = getNormalizedGroupsData();
+
+    const notificationIndex = notifications.findIndex(
+      n =>
+        n.id === notificationId &&
+        n.userId === userId &&
+        n.type === 'group_invite'
+    );
+
+    if (notificationIndex === -1) {
+      return res.status(404).json({ message: 'Group invite notification not found' });
+    }
+
+    const notification = notifications[notificationIndex];
+    const group = groupsData.groups.find(g => g.id === notification.groupId);
+
+    if (group) {
+      if (!Array.isArray(group.participants)) {
+        group.participants = [];
+      }
+
+      const participant = group.participants.find(p => p.userId === userId);
+
+      if (participant) {
+        participant.status = 'declined';
+      } else {
+        group.participants.push({
+          userId,
+          status: 'declined'
+        });
+      }
+
+      writeGroupsFile(groupsData);
+    }
+
+    notifications.splice(notificationIndex, 1);
+    writeNotificationsFile(notifications);
+
+    return res.sendStatus(204);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Failed to decline group invite' });
+  }
+});
+
+app.get('/groups/:groupId', (req, res) => {
+  try {
+    const { groupId } = req.params;
+    const groupsData = getNormalizedGroupsData();
+
+    const group = groupsData.groups.find(g => g.id === groupId);
+    if (!group) {
+      return res.status(404).json({ message: 'Group not found' });
+    }
+
+    writeGroupsFile(groupsData);
+    return res.json(group);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Failed to fetch group' });
+  }
+});
+
+app.delete('/groups/:groupId/members/:userId', (req, res) => {
+  try {
+    const { groupId, userId } = req.params;
+    const groupsData = getNormalizedGroupsData();
+
+    const groupIndex = groupsData.groups.findIndex(g => g.id === groupId);
+    if (groupIndex === -1) {
+      return res.status(404).json({ message: 'Group not found' });
+    }
+
+    const group = groupsData.groups[groupIndex];
+    group.participants = (group.participants || []).filter(p => p.userId !== userId);
+
+    const acceptedCount = group.participants.filter(p => p.status === 'accepted').length;
+
+    if (acceptedCount === 0) {
+      groupsData.groups.splice(groupIndex, 1);
+      writeGroupsFile(groupsData);
+      removeGroupInviteNotifications(groupId);
+      return res.sendStatus(204);
+    }
+
+    writeGroupsFile(groupsData);
+    return res.sendStatus(204);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Failed to leave group' });
+  }
+});
+
 app.delete('/users/:id', async (req, res) => {
   try {
     const { id } = req.params;
@@ -255,6 +601,32 @@ app.delete('/users/:id', async (req, res) => {
     }
 
     await writeFriendsFile(friendsData);
+
+    const groupsData = getNormalizedGroupsData();
+    const deletedGroupIds = [];
+
+    groupsData.groups = groupsData.groups
+      .map(group => ({
+        ...group,
+        participants: (group.participants || []).filter(p => p.userId !== id)
+      }))
+      .filter(group => {
+        const keepGroup = group.participants.some(p => p.status === 'accepted');
+        if (!keepGroup) {
+          deletedGroupIds.push(group.id);
+        }
+        return keepGroup;
+      });
+
+    writeGroupsFile(groupsData);
+
+    if (deletedGroupIds.length > 0) {
+      const notifications = readNotificationsFile();
+      const filteredNotifications = notifications.filter(
+        n => !(n.type === 'group_invite' && deletedGroupIds.includes(n.groupId))
+      );
+      writeNotificationsFile(filteredNotifications);
+    }
 
     return res.sendStatus(204);
   } catch (err) {
@@ -343,7 +715,7 @@ app.post('/bookings', (req, res) => {
     for (const invitedUserId of uniqueUserIds) {
       if (invitedUserId === creatorId) continue;
 
-        const expiresAt = `${date} ${endTime}`;
+      const expiresAt = `${date} ${endTime}`;
 
       notifications.push({
         id: uuidv4(),

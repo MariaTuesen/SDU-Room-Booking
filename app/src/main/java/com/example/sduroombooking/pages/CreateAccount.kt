@@ -23,6 +23,7 @@ import com.example.sduroombooking.navigation.Destination
 import com.example.sduroombooking.ui.theme.AlatsiFont
 import com.example.sduroombooking.ui.theme.AppGreen
 import com.example.sduroombooking.ui.theme.TextFieldGrey
+import com.example.sduroombooking.ui.theme.TextGrey
 import com.example.sduroombooking.viewmodel.UserViewModel
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.selection.toggleable
@@ -70,14 +71,14 @@ fun CreateAccount(
             OutlinedTextField(
                 value = fullName,
                 onValueChange = { fullName = it },
-                placeholder = { Text("Full name", fontFamily = AlatsiFont, color = TextFieldGrey) },
+                placeholder = { Text("Full name", fontFamily = AlatsiFont, color = TextGrey) },
                 shape = RoundedCornerShape(14.dp),
                 modifier = Modifier.fillMaxWidth().border(2.dp, AppGreen, RoundedCornerShape(14.dp)),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = AppGreen,
                     unfocusedBorderColor = AppGreen,
-                    focusedContainerColor = Color(0xFFD9D9D9).copy(alpha = 0.3f),
-                    unfocusedContainerColor = Color(0xFFD9D9D9).copy(alpha = 0.3f)
+                    focusedContainerColor = TextFieldGrey.copy(alpha=0.3f),
+                    unfocusedContainerColor = TextFieldGrey.copy(alpha=0.3f)
                 )
             )
 
@@ -86,15 +87,15 @@ fun CreateAccount(
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
-                placeholder = { Text("SDU Mail", fontFamily = AlatsiFont, color = TextFieldGrey) },
+                placeholder = { Text("SDU Mail", fontFamily = AlatsiFont, color = TextGrey) },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                 shape = RoundedCornerShape(14.dp),
                 modifier = Modifier.fillMaxWidth().border(2.dp, AppGreen, RoundedCornerShape(14.dp)),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = AppGreen,
                     unfocusedBorderColor = AppGreen,
-                    focusedContainerColor = Color(0xFFD9D9D9).copy(alpha = 0.3f),
-                    unfocusedContainerColor = Color(0xFFD9D9D9).copy(alpha = 0.3f)
+                    focusedContainerColor = TextFieldGrey.copy(alpha=0.3f),
+                    unfocusedContainerColor = TextFieldGrey.copy(alpha=0.3f)
                 )
             )
 
@@ -103,15 +104,15 @@ fun CreateAccount(
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
-                placeholder = { Text("Password", fontFamily = AlatsiFont, color = TextFieldGrey) },
+                placeholder = { Text("Password", fontFamily = AlatsiFont, color = TextGrey) },
                 visualTransformation = PasswordVisualTransformation(),
                 shape = RoundedCornerShape(14.dp),
                 modifier = Modifier.fillMaxWidth().border(2.dp, AppGreen, RoundedCornerShape(14.dp)),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = AppGreen,
                     unfocusedBorderColor = AppGreen,
-                    focusedContainerColor = Color(0xFFD9D9D9).copy(alpha = 0.3f),
-                    unfocusedContainerColor = Color(0xFFD9D9D9).copy(alpha = 0.3f)
+                    focusedContainerColor = TextFieldGrey.copy(alpha=0.3f),
+                    unfocusedContainerColor = TextFieldGrey.copy(alpha=0.3f)
                 )
             )
 
@@ -120,15 +121,15 @@ fun CreateAccount(
             OutlinedTextField(
                 value = confirmPassword,
                 onValueChange = { confirmPassword = it },
-                placeholder = { Text("Confirm password", fontFamily = AlatsiFont, color = TextFieldGrey) },
+                placeholder = { Text("Confirm password", fontFamily = AlatsiFont, color = TextGrey) },
                 visualTransformation = PasswordVisualTransformation(),
                 shape = RoundedCornerShape(14.dp),
                 modifier = Modifier.fillMaxWidth().border(2.dp, AppGreen, RoundedCornerShape(14.dp)),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = AppGreen,
                     unfocusedBorderColor = AppGreen,
-                    focusedContainerColor = Color(0xFFD9D9D9).copy(alpha = 0.3f),
-                    unfocusedContainerColor = Color(0xFFD9D9D9).copy(alpha = 0.3f)
+                    focusedContainerColor = TextFieldGrey.copy(alpha=0.3f),
+                    unfocusedContainerColor = TextFieldGrey.copy(alpha=0.3f)
                 )
             )
 
@@ -163,7 +164,7 @@ fun CreateAccount(
                     fontFamily= AlatsiFont,
                     color = AppGreen,
                     modifier = Modifier.clickable {
-                        navController.navigate(Destination.TERMSANDCONDITIONS.route)
+                        navController.navigate(Destination.TERMSANDCONDITIONS.createTermsRoute(false))
                     }
                 )
             }
