@@ -6,12 +6,17 @@ import androidx.lifecycle.viewModelScope
 import com.example.sduroombooking.apisetup.RetrofitClient
 import com.example.sduroombooking.dataclasses.Booking
 import com.example.sduroombooking.dataclasses.CreateBookingRequest
+import com.example.sduroombooking.dataclasses.User
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
 
 class BookingViewModel : ViewModel() {
 
+    var currentUser = mutableStateOf<User?>(null)
+
     var bookingsForSelectedDate = mutableStateOf<List<Booking>>(emptyList())
+
+    var currentUserBookings = mutableStateOf<List<Booking>>(emptyList())
     var bookingsLoading = mutableStateOf(false)
     var bookingsError = mutableStateOf<String?>(null)
 
@@ -65,4 +70,66 @@ class BookingViewModel : ViewModel() {
             }
         }
     }
+
+    fun deleteBooking(
+        bookingId: String,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        viewModelScope.launch {
+            try {
+                val response = RetrofitClient.api.deleteBooking(bookingId)
+                if (response.isSuccessful) {
+                    onSuccess()
+                } else {
+                    onError("it wasn't possible to cancel booking (HTTP ${response.code()})")
+                }
+            } catch (e: Exception) {
+                onError("Cancellation failed: ${e.message}")
+            }
+        }
+    }
+
+    fun updateBookingParticipants(
+        booking: Booking,
+        newUSerIds: List<String>,
+        onSuccess: () -> Unit
+    )
+    {
+        viewModelScope.launch {
+            try {
+                val updatedBooking = booking.copy(userIds = newUSerIds)
+
+                RetrofitClient.api.updateBooking(booking.id, updatedBooking)
+
+                fetchUserBookings()
+
+                onSuccess()
+            } catch (e: Exception){
+                e.printStackTrace()
+            }
+        }
+    }
+
+    fun fetchUserBookings()
+    {
+        val userId = currentUser.value?.id ?: return
+
+        viewModelScope.launch{
+            bookingsLoading.value = true
+            try
+            {
+                val allBookings = RetrofitClient.api.getBookings()
+                currentUserBookings.value = allBookings.filter { it.userIds.contains(userId) }
+            } catch (e: Exception)
+            {
+                e.printStackTrace()
+                bookingsError.value = "Couldn't load you booking"
+            } finally
+            {
+                bookingsLoading.value = false
+            }
+        }
+    }
+
 }
