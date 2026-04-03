@@ -79,12 +79,23 @@ import com.example.sduroombooking.dataclasses.Booking
 import com.example.sduroombooking.dataclasses.User
 import com.example.sduroombooking.ui.theme.AppGreen
 import com.example.sduroombooking.ui.theme.TextFieldGrey
+data class EditBookingPopUpUiModel(
+    val roomDbId: Int,
+    val roomName: String,
+    val building: String,
+    val dateText: String,
+    val timeText: String,
+    val seatsText: String,
+    val hasMonitor: Boolean,
+    val hasWhiteboard: Boolean,
+    val isAccessible: Boolean
+)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditBookingPopUp(
+    model: EditBookingPopUpUiModel,
     booking: Booking,
-    room: com.example.sduroombooking.dataclasses.Room?,
     userVM: com.example.sduroombooking.viewmodel.UserViewModel,
     onDismiss: () -> Unit
 
@@ -95,10 +106,10 @@ fun EditBookingPopUp(
     var peopleQuery by remember { mutableStateOf("") }
     var peopleExpanded by remember { mutableStateOf(false) }
     var showConfirmDelete by remember { mutableStateOf(false) }
-    var showReportIssue by remember {mutableStateOf(false)}
+    var showReportIssue by remember { mutableStateOf(false) }
 
     val allUsers = userVM.allUsers.value
-    val participants by remember(booking.id, userVM.currentUserBookings.value,allUsers){
+    val participants by remember(booking.id, userVM.currentUserBookings.value, allUsers) {
         derivedStateOf {
             val freshBooking = userVM.currentUserBookings.value.find { it.id == booking.id }
             val idsToShow = freshBooking?.userIds ?: booking.userIds
@@ -118,308 +129,309 @@ fun EditBookingPopUp(
 
     Card(
         modifier = Modifier
-            .fillMaxWidth()
+            .fillMaxWidth(0.95f)
             .padding(16.dp),
         shape = RoundedCornerShape(20.dp),
         border = BorderStroke(2.dp, AppGreen),
         colors = CardDefaults.cardColors(TextFieldGrey)
-    ) {
+    )
+    {
         Column(modifier = Modifier.padding(20.dp))
         {
-            Row(modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.Top,
-                horizontalArrangement = Arrangement.SpaceBetween
-            )
-            {
-                Column(modifier = Modifier.weight(1f))
+                Text(
+                    text = model.roomName,
+                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Black),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+
+                Spacer(modifier = Modifier.height(6.dp))
+
+                Text(
+                    text = model.building,
+                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+
+                Row(verticalAlignment = Alignment.CenterVertically)
                 {
-                       Row(
-                           verticalAlignment = Alignment.CenterVertically,
-                           horizontalArrangement = Arrangement.spacedBy(12.dp)
-                       )
-                       {
-                            Text(
-                                text  = room?.name ?: "Unknown Room",
-                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Black),
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
+                    Icon(
+                        painter = painterResource(R.drawable.calendar),
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
 
-                           Row(verticalAlignment = Alignment.CenterVertically)
-                           {
-                               Icon(
-                                       Icons.Default.DateRange,
-                                       null,
-                                       modifier = Modifier.size(20.dp)
-                                   )
-
-                               Spacer(modifier =  Modifier.width(4.dp))
-
-                               Text(
-                                   text = booking.date,
-                                   style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Black),
-                                   maxLines = 1,
-                                   overflow = TextOverflow.Ellipsis
-                               )
-                           }
-
-                           Row(verticalAlignment =Alignment.CenterVertically)
-                           {
-                               Icon(
-                                   Icons.Default.Timer,
-                                   null,
-                                   modifier = Modifier.size(20.dp)
-                               )
-
-                               Spacer(modifier =  Modifier.size(20.dp))
-
-                               Text(
-                                   text = "${booking.startTime}-${booking.endTime}",
-                                   style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Black),
-                                   maxLines = 1,
-                                   overflow = TextOverflow.Ellipsis
-                               )
-                           }
-                       }
+                    Spacer(Modifier.width(4.dp))
 
                     Text(
-                        text = room?.let { "${it.building}, ${it.location}" } ?: "",
-                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Black)
+                        text = model.dateText,
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Black),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+
+                    Spacer(modifier = Modifier.width(12.dp))
+
+                    Icon(
+                        painter = painterResource(R.drawable.clock),
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+
+                    Spacer(Modifier.width(4.dp))
+
+                    Text(
+                        text = model.timeText,
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Black),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
 
-                Column(horizontalAlignment = Alignment.End)
-                {
-                    StatusButton(
-                        text = "Cancel booking",
-                        color = Color.Red,
-                        onClick = { showConfirmDelete = true}
-                    )
+                    Spacer(modifier = Modifier.height(16.dp))
 
-                    Spacer(modifier = Modifier.height(6.dp))
-
-                    StatusButton(
-                        text = "Report issue",
-                        color = Color.Yellow,
-                        onClick = { showReportIssue = true}
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            androidx.compose.foundation.lazy.LazyRow(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                contentPadding = PaddingValues(end = 16.dp)
-            ) {
-                item {
-                    AssistChip(
-                        onClick = {},
-                        label = {
-                            Text(
-                                "${room?.seats ?: 0} seats",
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
+                    androidx.compose.foundation.lazy.LazyRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        contentPadding = PaddingValues(end = 16.dp)
+                    ) {
+                        item {
+                            AssistChip(
+                                onClick = {},
+                                label = {
+                                    Text(
+                                        model.seatsText,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                }
                             )
                         }
+
+                        if (model.hasMonitor) {
+                            item {
+                                AssistChip(
+                                    onClick = {},
+                                    label = {
+                                        Text(
+                                            "TV screen",
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                    }
+                                )
+                            }
+                        }
+
+                        if (model.hasWhiteboard) {
+                            item {
+                                AssistChip(
+                                    onClick = {},
+                                    label = {
+                                        Text(
+                                            "Whiteboard",
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                    }
+                                )
+                            }
+                        }
+
+                        if (model.isAccessible) {
+                            item {
+                                Icon(
+                                    painter = painterResource(R.drawable.wheelchair),
+                                    contentDescription = "Accessible",
+                                    tint = Color.Unspecified,
+                                    modifier = Modifier
+                                        .size(26.dp)
+                                        .padding(start = 4.dp)
+                                        .offset(y = 11.dp)
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    HorizontalDivider(color = Color.LightGray.copy(alpha = 0.3f))
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    ExposedDropdownMenuBox(
+                        expanded = peopleExpanded,
+                        onExpandedChange = { peopleExpanded = it }
                     )
-                }
-
-                if (room?.has_monitor == true) {
-                    item {
-                        AssistChip(
-                            onClick = {},
-                            label = {
-                                Text(
-                                    "TV screen",
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                            }
-                        )
-                    }
-                }
-
-                if (room?.has_whiteboard == true) {
-                    item {
-                        AssistChip(
-                            onClick = {},
-                            label = {
-                                Text(
-                                    "Whiteboard",
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                            }
-                        )
-                    }
-                }
-
-                if (room?.is_accessible == true) {
-                    item {
-                        Icon(
-                            painter = painterResource(R.drawable.wheelchair),
-                            contentDescription = "Accessible",
-                            tint = Color.Unspecified,
+                    {
+                        OutlinedTextField(
+                            value = peopleQuery,
+                            onValueChange = { peopleQuery = it; peopleExpanded = true },
+                            placeholder = { Text("Add people", color = Color.Gray) },
+                            leadingIcon = { Icon(Icons.Default.Search, null, tint = Color.Gray) },
+                            shape = RoundedCornerShape(14.dp),
                             modifier = Modifier
-                                .size(26.dp)
-                                .padding(start = 4.dp)
-                                .offset(y = 11.dp)
+                                .menuAnchor()
+                                .fillMaxWidth()
+                                .height(50.dp)
+                                .border(2.dp, AppGreen, RoundedCornerShape(14.dp)),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = Color.Transparent,
+                                unfocusedBorderColor = Color.Transparent
+                            )
+                        )
+
+                        ExposedDropdownMenu(
+                            expanded = peopleExpanded,
+                            onDismissRequest = { peopleExpanded = false }
+                        )
+                        {
+                            candidatePeople.take(5).forEach { user ->
+                                DropdownMenuItem(
+                                    text =
+                                        {
+                                            Row(
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                modifier = Modifier.fillMaxWidth()
+                                            )
+                                            {
+                                                val baseUrl = "http://10.0.2.2:3000"
+                                                val imageUrl = user.profile_picture
+                                                    ?.takeIf { it.isNotBlank() }
+                                                    ?.let { if (it.startsWith("http")) it else baseUrl + it }
+
+                                                AsyncImage(
+                                                    model = ImageRequest.Builder(LocalContext.current)
+                                                        .data(
+                                                            imageUrl ?: R.drawable.no_profile_image
+                                                        )
+                                                        .crossfade(true)
+                                                        .build(),
+                                                    contentDescription = "Profile picture",
+                                                    modifier = Modifier
+                                                        .size(35.dp)
+                                                        .clip(CircleShape),
+                                                    contentScale = ContentScale.Crop
+                                                )
+
+                                                Spacer(modifier = Modifier.width(12.dp))
+
+                                                Text(
+                                                    text = user.fullName,
+                                                    style = MaterialTheme.typography.bodySmall.copy(
+                                                        fontWeight = FontWeight.Black
+                                                    )
+                                                )
+
+                                            }
+                                        },
+                                    onClick = {
+                                        val newUserList = booking.userIds + user.id
+                                        userVM.updateBookingParticipants(booking, newUserList)
+                                        {
+                                        }
+                                        peopleQuery = "";
+                                        peopleExpanded = false
+                                    }
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(max = 150.dp)
+                    )
+                    {
+                        LazyColumn(
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            items(participants) { user ->
+                                ParticipantItem(
+                                    user = user,
+                                    onRemove = {
+                                        val newList = booking.userIds.filter { it != user.id }
+                                        userVM.updateBookingParticipants(booking, newList) { }
+                                    }
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(18.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        StatusButton(
+                            text = "Report issue",
+                            color = Color.Yellow,
+                            onClick = { showReportIssue = true }
+                        )
+
+                        StatusButton(
+                            text = "Cancel booking",
+                            color = Color.Red,
+                            onClick = { showConfirmDelete = true }
                         )
                     }
                 }
-            }
+        }
 
-            Spacer(modifier = Modifier.height(20.dp))
-
-            HorizontalDivider(color = Color.LightGray.copy(alpha = 0.3f))
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            ExposedDropdownMenuBox(
-                expanded = peopleExpanded,
-                onExpandedChange = { peopleExpanded = it }
+        if (showConfirmDelete) {
+            androidx.compose.ui.window.Dialog(
+                onDismissRequest = { showConfirmDelete = false }
             )
             {
-                OutlinedTextField(
-                    value = peopleQuery,
-                    onValueChange = { peopleQuery = it; peopleExpanded = true },
-                    placeholder = { Text("Add people", color = Color.Gray) },
-                    leadingIcon = { Icon(Icons.Default.Search, null, tint = Color.Gray) },
-                    shape = RoundedCornerShape(14.dp),
-                    modifier = Modifier
-                        .menuAnchor()
-                        .fillMaxWidth()
-                        .height(50.dp)
-                        .border(2.dp, AppGreen, RoundedCornerShape(14.dp)),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Color.Transparent,
-                        unfocusedBorderColor = Color.Transparent
-                    )
-                )
-
-                ExposedDropdownMenu(
-                    expanded = peopleExpanded,
-                    onDismissRequest = { peopleExpanded = false}
-                )
-                {
-                    candidatePeople.take(5).forEach { user ->
-                        DropdownMenuItem(
-                            text =
-                                {
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        modifier = Modifier.fillMaxWidth()
-                                    )
-                                    {
-                                        val baseUrl = "http://10.0.2.2:3000"
-                                        val imageUrl = user.profile_picture
-                                            ?.takeIf { it.isNotBlank() }
-                                            ?.let { if (it.startsWith("http")) it else baseUrl + it }
-
-                                        AsyncImage(
-                                            model = ImageRequest.Builder(LocalContext.current)
-                                                .data(imageUrl ?: R.drawable.no_profile_image)
-                                                .crossfade(true)
-                                                .build(),
-                                            contentDescription = "Profile picture",
-                                            modifier = Modifier
-                                                .size(35.dp)
-                                                .clip(CircleShape),
-                                            contentScale = ContentScale.Crop
-                                        )
-
-                                        Spacer(modifier = Modifier.width(12.dp))
-
-                                            Text(
-                                                text = user.fullName,
-                                                style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Black)
-                                            )
-
-                                    }
-                                   },
-                            onClick = {
-                                val newUserList = booking.userIds + user.id
-                                userVM.updateBookingParticipants(booking, newUserList)
-                                {
-                                }
-                                peopleQuery = "";
-                                peopleExpanded = false
-                            }
+                ConfirmDeletePopUp(
+                    onConfirm = {
+                        userVM.deleteBooking(
+                            booking.id,
+                            onSuccess = {
+                                userVM.fetchUserBookings()
+                                showConfirmDelete = false
+                                onDismiss()
+                            },
+                            onError = {}
                         )
-                    }
-                }
+                    },
+                    onDismiss = { showConfirmDelete = false }
+                )
             }
+        }
 
-            Spacer(modifier = Modifier.height(16.dp))
+        if (showReportIssue) {
+            Dialog(
+                onDismissRequest = { showReportIssue = false },
+                properties = DialogProperties(
+                    usePlatformDefaultWidth = false
+                )
+            )
+            {
+                ReportIssuePopUp(
+                    roomName = model.roomName,
+                    onDismiss = { showReportIssue = false },
+                    onSend = {
+                        android.widget.Toast.makeText(
+                            context,
+                            "Report sent successfully",
+                            android.widget.Toast.LENGTH_SHORT
+                        ).show()
 
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(max = 150.dp)
-            ) {
-                LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    items(participants) { user ->
-                        ParticipantItem(
-                            user = user,
-                            onRemove = {
-                                val newList = booking.userIds.filter { it != user.id }
-                                userVM.updateBookingParticipants(booking, newList) { }
-                            }
-                        )
+                        showReportIssue = false
                     }
-                }
+                )
             }
         }
     }
 
-    if (showConfirmDelete)
-    {
-        androidx.compose.ui.window.Dialog(
-            onDismissRequest = { showConfirmDelete = false}
-        )
-        {
-            ConfirmDeletePopUp(
-                onConfirm = {
-                    userVM.deleteBooking(
-                        booking.id,
-                        onSuccess = {
-                            userVM.fetchUserBookings()
-                            showConfirmDelete = false
-                            onDismiss()
-                        },
-                        onError = {}
-                    )
-                },
-                onDismiss = {showConfirmDelete = false}
-            )
-        }
-    }
-
-    if (showReportIssue)
-    {
-        Dialog(
-            onDismissRequest = { showReportIssue = false},
-            properties = DialogProperties(
-                usePlatformDefaultWidth = false)
-        )
-        {
-            ReportIssuePopUp(
-                roomName = room?.name ?: "Unkown Room",
-                onDismiss = { showReportIssue = false },
-                onSend = {
-                    android.widget.Toast.makeText(context, "Report sent successfully", android.widget.Toast.LENGTH_SHORT).show()
-
-                    showReportIssue = false
-                }
-            )
-        }
-    }
-}
 
 @Composable
 fun ParticipantItem(user: User, onRemove: () -> Unit)
@@ -461,7 +473,10 @@ fun ParticipantItem(user: User, onRemove: () -> Unit)
         }
 
         IconButton(onClick = {  showConfirmDeleteParticipant = true}) {
-            Icon(Icons.Default.Delete, contentDescription = "Remove", modifier = Modifier.size(20.dp))
+            Icon(
+                painter = painterResource(R.drawable.bin),
+                contentDescription = "Remove",
+                modifier = Modifier.size(20.dp))
         }
     }
 

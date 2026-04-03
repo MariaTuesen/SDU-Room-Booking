@@ -83,6 +83,7 @@ fun ConfirmDeleteParticipantPopUp(
                     Text(
                         text = "No don’t remove",
                         style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Black),
+                        color = Black
                     )
                 }
 

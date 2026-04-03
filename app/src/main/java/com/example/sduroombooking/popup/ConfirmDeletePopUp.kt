@@ -88,6 +88,7 @@ fun ConfirmDeletePopUp(
                     Text(
                         text = "No don’t cancel",
                         style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Black),
+                        color = Black
                     )
                 }
 

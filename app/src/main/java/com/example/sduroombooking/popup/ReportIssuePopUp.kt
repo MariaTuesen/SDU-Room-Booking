@@ -29,6 +29,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Color.Companion.Black
 import androidx.compose.ui.graphics.Color.Companion.Gray
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -109,7 +111,8 @@ fun ReportIssuePopUp(
                 {
                     Text(
                         text = "Cancel report",
-                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Black)
+                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Black),
+                        color = Black
                     )
                 }
                 Spacer(modifier = Modifier.width(15.dp))
@@ -125,7 +128,8 @@ fun ReportIssuePopUp(
                 {
                     Text(
                         text = "Send report",
-                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Black)
+                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Black),
+                        color = Black
                     )
                 }
             }

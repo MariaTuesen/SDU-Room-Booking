@@ -12,14 +12,19 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.sduroombooking.bars.NavigationBar
 import com.example.sduroombooking.cards.BookedRoomCard
+import com.example.sduroombooking.cards.BookedRoomUiModel
 import com.example.sduroombooking.navigation.Destination
 import com.example.sduroombooking.popup.EditBookingPopUp
+import com.example.sduroombooking.popup.EditBookingPopUpUiModel
 import com.example.sduroombooking.viewmodel.UserViewModel
 import java.lang.reflect.Executable
+import kotlin.String
 
 @Composable
 fun HomePage(navController: NavHostController, userVM: UserViewModel)
@@ -71,14 +76,12 @@ fun HomePage(navController: NavHostController, userVM: UserViewModel)
                     items(userBookings) { booking ->
                         val room = rooms.find { it.id == booking.roomId }
 
-                        val cardModel = com.example.sduroombooking.cards.BookedRoomUiModel(
+                        val cardModel = BookedRoomUiModel(
                             roomName = room?.name ?: "Unknown",
                             building = room?.building ?: "Unknown Building",
                             dateText = booking.date,
                             timeText = "${booking.startTime}-${booking.endTime}",
-                            roomDbId = room?.id ?: 0,
-                            date = booking.date,
-                            timeRange = "${booking.startTime}-${booking.endTime}"
+                            roomDbId = room?.id ?: 0
                         )
                         BookedRoomCard(
                            model = cardModel,
@@ -94,9 +97,9 @@ fun HomePage(navController: NavHostController, userVM: UserViewModel)
         if (showPopup && selectedBooking != null)
         {
             val room = rooms.find { it.id == selectedBooking.roomId }
-            androidx.compose.ui.window.Dialog(
+            Dialog(
                 onDismissRequest = {showPopup = false },
-                properties = androidx.compose.ui.window.DialogProperties(
+                properties = DialogProperties(
                     usePlatformDefaultWidth = false
                 )
             )
@@ -108,13 +111,24 @@ fun HomePage(navController: NavHostController, userVM: UserViewModel)
                     contentAlignment = Alignment.Center
                 )
                 {
+                    val cardModel = EditBookingPopUpUiModel(
+                        roomName = room?.name ?: "Unknown",
+                        building = room?.building ?: "Unknown Building",
+                        dateText = selectedBooking.date,
+                        timeText = "${selectedBooking.startTime}-${selectedBooking.endTime}",
+                        roomDbId = room?.id ?: 0,
+                        seatsText = "${room?.seats} seats",
+                        hasMonitor = room?.has_monitor ?: false,
+                        hasWhiteboard = room?.has_whiteboard ?: false,
+                        isAccessible = room?.is_accessible ?: false
+                    )
                     EditBookingPopUp(
-                        booking = selectedBooking,
-                        room = room,
-                        userVM = userVM,
+                        model = cardModel,
                         onDismiss = {
                             showPopup = false
-                        }
+                        },
+                        booking = selectedBooking,
+                        userVM = userVM,
                     )
                 }
             }

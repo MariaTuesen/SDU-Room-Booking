@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -23,18 +24,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.sduroombooking.R
 import com.example.sduroombooking.ui.theme.AppGreen
 
 data class BookedRoomUiModel(
     val roomName: String,
     val building: String,
-    val date: String,
-    val timeRange: String,
     val roomDbId: Int,
     val dateText: String,
     val timeText: String
@@ -50,9 +51,7 @@ fun BookedRoomCard(
     Surface(
         shape = RoundedCornerShape(18.dp),
         border = BorderStroke(2.dp, borderColor),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 4.dp)
+        modifier = Modifier.fillMaxWidth()
     )
     {
         Box(
@@ -61,44 +60,74 @@ fun BookedRoomCard(
                 .padding(16.dp)
         )
         {
-            Column(modifier = Modifier.fillMaxWidth())
+            IconButton(
+                onClick = onEditClick,
+                modifier = Modifier.align(Alignment.CenterEnd)
+            )
             {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                Icon(
+                    imageVector = Icons.Default.Edit,
+                    contentDescription = "Edit",
+                    modifier = Modifier.size(50.dp),
+                    tint = Color.Black
+                )
+            }
+
+            Column(
+                modifier = Modifier.fillMaxWidth()
+            )
+            {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(end=100.dp)
                 )
                 {
                     Text(
                         text = model.roomName,
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Black),
+                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Black),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
 
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    Spacer(modifier =Modifier.height(6.dp))
+
+                    Text(
+                        text = model.building,
+                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+
+                    Spacer(modifier =Modifier.height(6.dp))
+
+                    Row(verticalAlignment = Alignment.CenterVertically)
+                    {
                         Icon(
-                            imageVector = Icons.Default.DateRange,
+                           painter = painterResource(R.drawable.clock),
                             contentDescription = null,
-                            modifier = Modifier.size(20.dp)
+                            modifier = Modifier.size(18.dp)
                         )
+
                         Spacer(Modifier.width(4.dp))
+
                         Text(
                             text = model.dateText,
                             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Black),
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
-                    }
 
-                    Row(verticalAlignment = Alignment.CenterVertically)
-                    {
-                        Icon(
-                            imageVector = Icons.Default.Timer,
+                        Spacer(modifier = Modifier.width(12.dp))
+
+                     Icon(
+                            painter = painterResource(R.drawable.calendar),
                             contentDescription = null,
-                            modifier = Modifier.size(20.dp)
+                            modifier = Modifier.size(18.dp)
                         )
+
                         Spacer(Modifier.width(4.dp))
+
                         Text(
                             text = model.timeText,
                             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Black),
@@ -107,29 +136,6 @@ fun BookedRoomCard(
                         )
                     }
                 }
-
-                Text(
-                    text = model.building,
-                    style = MaterialTheme.typography.labelMedium.copy(
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 13.sp
-                    ),
-                    color = Color.Black,
-                    modifier = Modifier.padding(top = 2.dp)
-                )
-            }
-
-            IconButton(
-                onClick = onEditClick,
-                modifier = Modifier.align(Alignment.BottomEnd)
-            )
-            {
-                Icon(
-                    imageVector = Icons.Default.Edit,
-                    contentDescription = "Edit",
-                    modifier = Modifier.size(28.dp),
-                    tint = Color.Black
-                )
             }
         }
     }
@@ -151,9 +157,7 @@ private fun BookedRoomCardPreview()
          roomName = "ØI4-504a-3",
          building = "MMMI, SDU Odense",
          dateText = "22/2/26",
-         timeText = "12-14",
-         date ="22/2/26",
-         timeRange = "12-14"
+         timeText = "12-14"
      ),
      onEditClick = {}
  )
