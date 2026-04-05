@@ -60,7 +60,7 @@ function removeExpiredBookings()
  if (y < currentYear) return false;
 
  if (m > currentMonth) return true;
- if (m < currentMonth) return falsesofisofi;
+ if (m < currentMonth) return false;
 
  if (d > currentDay) return true;
  if (d < currentDay) return false;
