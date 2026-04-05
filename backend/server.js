@@ -8,7 +8,7 @@ const multer = require('multer');
 const fs = require('fs');
 
 const { readFriendsFile, writeFriendsFile, uniq } = require('./models/FriendsStore');
-const { readBookingsFile, writeBookingsFile, hasConflict } = require('./models/BookingsStore');
+const { readBookingsFile, writeBookingsFile, hasConflict, removeExpiredBookings } = require('./models/BookingsStore');
 const { readNotificationsFile, writeNotificationsFile, removeExpiredNotifications } = require('./models/NotificationsStore');
 const { readGroupsFile, writeGroupsFile } = require('./models/GroupsStore');
 
@@ -795,6 +795,8 @@ app.delete('/bookings/:id', (req, res) =>
   }
 });
 
+
+
 app.get('/users/:id/notifications', (req, res) => {
   try {
     const userId = req.params.id;
@@ -838,4 +840,17 @@ app.post('/users/:id/notifications/:notificationId/read', (req, res) => {
 
 app.listen(3000, '0.0.0.0', () => {
   console.log('Server running on http://localhost:3000');
+
+  try {
+  removeExpiredBookings();
+  } catch (err) {
+  console.error("Initial cleanup failed:", err)}
 });
+
+setInterval(() => {
+  try {
+    removeExpiredBookings();
+  } catch (err) {
+    console.error("Error under cleaning of bookings:", err);
+  }
+}, 60000);

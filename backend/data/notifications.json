@@ -42,5 +42,16 @@
     "read": false,
     "type": "booking_invite",
     "bookingId": "e99aea91-76e6-4a22-b7c7-a10aeba3c772"
+  },
+  {
+    "id": "93c4c39a-23e4-43b8-b4f6-fab9029c7e43",
+    "userId": "39673d52-c0a1-4b37-8692-2532480157a8",
+    "title": "New booking",
+    "message": "Sofie Bergquist Madsen added you to a booking on 5/4/2026 from 14:50 to 15:00",
+    "createdAt": "2026-04-05T14:50:00.842Z",
+    "expiresAt": "5/4/2026 15:00",
+    "read": false,
+    "type": "booking_invite",
+    "bookingId": "a61930c2-f7df-4785-a9b0-662057467b3c"
   }
 ]

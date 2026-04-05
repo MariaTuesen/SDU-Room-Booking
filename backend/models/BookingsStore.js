@@ -38,4 +38,41 @@ function hasConflict(bookings, roomId, date, startTime, endTime) {
   });
 }
 
-module.exports = { readBookingsFile, writeBookingsFile, hasConflict };
+function removeExpiredBookings()
+{
+    const bookings = readBookingsFile();
+    const now = new Date();
+
+    const currentDay = now.getDate();
+    const currentMonth = now.getMonth() + 1;
+    const currentYear = now.getFullYear();
+
+    const currentTime = now.toLocaleTimeString('dk-DK', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+    });
+
+ const filteredBookings = bookings.filter(b => {
+ const [d, m, y] = b.date.split('/').map(Number);
+
+ if (y > currentYear) return true;
+ if (y < currentYear) return false;
+
+ if (m > currentMonth) return true;
+ if (m < currentMonth) return falsesofisofi;
+
+ if (d > currentDay) return true;
+ if (d < currentDay) return false;
+
+ return b.endTime > currentTime;
+ });
+
+ if (filteredBookings.length !== bookings.length)
+ {
+    writeBookingsFile(filteredBookings);
+    console.log(`[${currentTime}] Auto-cleanup: remove bookings running.`);
+ }
+}
+
+module.exports = { readBookingsFile, writeBookingsFile, hasConflict, removeExpiredBookings };
