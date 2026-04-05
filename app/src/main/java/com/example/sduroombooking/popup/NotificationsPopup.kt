@@ -4,19 +4,24 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.unit.dp
+import com.example.sduroombooking.R
 import com.example.sduroombooking.dataclasses.NotificationItem
 import com.example.sduroombooking.ui.theme.AlatsiFont
 import com.example.sduroombooking.ui.theme.AppGreen
@@ -95,6 +100,7 @@ fun NotificationsPopup(
                                 NotificationRow(
                                     notification = notification,
                                     onClick = { onNotificationClick(notification) },
+                                    onDeleteClick = {onNotificationClick(notification)},
                                     onAcceptGroupInvite = { onAcceptGroupInvite(notification) },
                                     onDeclineGroupInvite = { onDeclineGroupInvite(notification) }
                                 )
@@ -117,6 +123,7 @@ fun NotificationsPopup(
 private fun NotificationRow(
     notification: NotificationItem,
     onClick: () -> Unit,
+    onDeleteClick: () -> Unit,
     onAcceptGroupInvite: () -> Unit,
     onDeclineGroupInvite: () -> Unit
 ) {
@@ -126,20 +133,41 @@ private fun NotificationRow(
             .clickable(onClick = onClick)
             .padding(vertical = 10.dp)
     ) {
-        Text(
-            text = notification.title,
-            fontFamily = AlatsiFont,
-            color = if (notification.read) Color.Black else AppGreen
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
         )
+        {
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .clickable(onClick = onClick)
+            )
+            {
+                Text(
+                    text = notification.title,
+                    fontFamily = AlatsiFont,
+                    color = if (notification.read) Color.Black else AppGreen
+                )
 
-        Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(4.dp))
 
-        Text(
-            text = notification.message,
-            fontFamily = AlatsiFont,
-            color = Color.Black
-        )
+                Text(
+                    text = notification.message,
+                    fontFamily = AlatsiFont,
+                    color = Color.Black
+                )
+            }
 
+            IconButton(onClick = onDeleteClick) {
+                Icon(
+                    painter = painterResource(R.drawable.bin),
+                    contentDescription = "Delete notification",
+                    tint = Color.Black,
+                    modifier = Modifier.size(25.dp)
+                )
+            }
+        }
         if (notification.type == "group_invite" && !notification.read) {
             Spacer(modifier = Modifier.height(8.dp))
 
