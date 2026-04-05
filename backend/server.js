@@ -820,16 +820,20 @@ app.post('/users/:id/notifications/:notificationId/read', (req, res) => {
     const { id, notificationId } = req.params;
     const notifications = readNotificationsFile();
 
-    const index = notifications.findIndex(
-      n => n.id === notificationId && n.userId === id
-    );
+    console.log('Trying to delete notification ${notificationId} for user ${id}');
 
-    if (index === -1) {
-      return res.status(404).json({ message: 'Notification not found' });
-    }
+   const filtered = notifications.filter(
+   n => !(n.id === notificationId && n.userId === id)
+   );
 
-    notifications[index].read = true;
-    writeNotificationsFile(notifications);
+   if(filtered.length === notifications.length)
+   {
+        console.log("No notification found to delete")
+        return res.status(404).json({message: 'Notification not found'});
+   }
+
+    writeNotificationsFile(filtered);
+    console.log("Notification deleted successfully from JSON")
 
     return res.sendStatus(204);
   } catch (err) {

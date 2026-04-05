@@ -35,9 +35,11 @@ class NotificationsViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 RetrofitClient.api.markNotificationAsRead(userId, notificationId)
-                notifications.value = notifications.value.map {
-                    if (it.id == notificationId) it.copy(read = true) else it
-                }
+
+                notifications.value = notifications.value.filterNot { it.id == notificationId }
+
+                println("Notification $notificationId removed from UI")
+
             } catch (e: Exception) {
                 e.printStackTrace()
             }

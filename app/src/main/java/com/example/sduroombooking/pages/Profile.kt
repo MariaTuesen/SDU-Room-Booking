@@ -237,21 +237,18 @@ fun Profile(
                 loading = notificationsViewModel.notificationsLoading.value,
                 error = notificationsViewModel.notificationsError.value,
                 onDismiss = {
-                    val currentUserId = userViewModel.currentUser.value?.id
-                    if (currentUserId != null) {
-                        notificationsViewModel.notifications.value
-                            .filter { !it.read && it.type != "group_invite" }
-                            .forEach { notification ->
-                                notificationsViewModel.markNotificationAsRead(
-                                    userId = currentUserId,
-                                    notificationId = notification.id
-                                )
-                            }
-                    }
-
                     showNotificationsPopup = false
                 },
-                onNotificationClick = { },
+                onNotificationClick = { notification ->
+                    val currentUserId = userViewModel.currentUser.value?.id
+                    if (currentUserId != null)
+                    {
+                        notificationsViewModel.markNotificationAsRead(
+                            userId = currentUserId,
+                            notificationId = notification.id
+                        )
+                    }
+                },
                 onAcceptGroupInvite = { notification ->
                     val currentUserId = userViewModel.currentUser.value?.id
                         ?: return@NotificationsPopup
