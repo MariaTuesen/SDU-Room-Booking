@@ -30,6 +30,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.sduroombooking.ui.theme.AppGreen
+import com.example.sduroombooking.ui.theme.TextFieldGrey
 
 @Composable
 fun ConfirmDeletePopUp(
@@ -38,11 +39,10 @@ fun ConfirmDeletePopUp(
 )
 {
     Card(
-        modifier =Modifier
-            .fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth(1f)
             .padding(16.dp),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = LightGray),
+        shape = RoundedCornerShape(18.dp),
         border = BorderStroke(2.dp, AppGreen)
     )
     {
@@ -67,7 +67,7 @@ fun ConfirmDeletePopUp(
                 Button(
                     onClick = onConfirm,
                     modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(8.dp),
+                    shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = AppGreen)
                     )
                 {
@@ -81,7 +81,7 @@ fun ConfirmDeletePopUp(
                 Button(
                     onClick = onDismiss,
                     modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(8.dp),
+                    shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = AppGreen)
                 )
                 {

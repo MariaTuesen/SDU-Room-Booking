@@ -21,6 +21,8 @@ import com.example.sduroombooking.popup.EditBookingPopUpUiModel
 import com.example.sduroombooking.viewmodel.BookingViewModel
 import com.example.sduroombooking.viewmodel.RoomsViewModel
 import com.example.sduroombooking.viewmodel.UserViewModel
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import kotlin.String
 
 @Composable
@@ -30,11 +32,23 @@ fun HomePage(navController: NavHostController, userVM: UserViewModel, bookingVM:
     val currentUser = userVM.currentUser.value
     val userBookings by bookingVM.currentUserBookings
 
+    val sortedBookings = remember(userBookings) {
+        val formatter = DateTimeFormatter.ofPattern("d/M/yyyy")
+        userBookings.sortedBy { booking ->
+            try {
+                LocalDate.parse(booking.date, formatter)
+            } catch (e: Exception)
+            {
+                LocalDate.MAX
+            }
+        }
+    }
+
     var showPopup by remember { mutableStateOf(false) }
     var selectedId by remember { mutableStateOf<String?>(null) }
 
-   val selectedBooking = remember(selectedId, userBookings) {
-       userBookings.find {it.id == selectedId}
+   val selectedBooking = remember(selectedId, sortedBookings) {
+       sortedBookings.find {it.id == selectedId}
    }
 
     LaunchedEffect(Unit)
@@ -49,6 +63,7 @@ fun HomePage(navController: NavHostController, userVM: UserViewModel, bookingVM:
     {
         Column(modifier = Modifier
             .fillMaxSize()
+            .statusBarsPadding()
             .padding(16.dp))
         {
             Text(
@@ -72,7 +87,7 @@ fun HomePage(navController: NavHostController, userVM: UserViewModel, bookingVM:
                     contentPadding = PaddingValues(bottom = 80.dp)
                 )
                 {
-                    items(userBookings) { booking ->
+                    items(sortedBookings) { booking ->
                         val room = rooms.find { it.id == booking.roomId }
 
                         val cardModel = BookedRoomUiModel(

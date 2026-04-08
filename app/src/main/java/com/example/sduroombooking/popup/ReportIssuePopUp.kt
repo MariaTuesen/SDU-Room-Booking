@@ -36,6 +36,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.sduroombooking.ui.theme.AppGreen
 import com.example.sduroombooking.ui.theme.TextFieldGrey
+import com.example.sduroombooking.ui.theme.TextGrey
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -53,7 +54,6 @@ fun ReportIssuePopUp(
             .padding(16.dp),
         shape = RoundedCornerShape(18.dp),
         border = BorderStroke(2.dp, AppGreen),
-        colors = CardDefaults.cardColors(containerColor = TextFieldGrey)
     )
     {
         Column(
@@ -82,7 +82,7 @@ fun ReportIssuePopUp(
                     Text(
                     text = "Write report here...",
                     style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Black),
-                    color = Gray
+                    color = TextGrey
                 )
                 },
                 modifier = Modifier

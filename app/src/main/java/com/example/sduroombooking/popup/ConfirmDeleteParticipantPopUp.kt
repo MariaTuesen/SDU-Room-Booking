@@ -37,7 +37,6 @@ fun ConfirmDeleteParticipantPopUp(
             .fillMaxWidth()
             .padding(16.dp),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = LightGray),
         border = BorderStroke(2.dp, AppGreen)
     )
     {
