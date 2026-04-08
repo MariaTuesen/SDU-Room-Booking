@@ -137,7 +137,7 @@ fun CreateGroupDialog(
                                 colors = CheckboxDefaults.colors(
                                     checkedColor = AppGreen,
                                     uncheckedColor = AppGreen,
-                                    checkmarkColor = Color.White
+                                    checkmarkColor = Color.Black
                                 )
                             )
 
@@ -203,7 +203,7 @@ fun CreateGroupDialog(
             ) {
                 Text(
                     text = "Create",
-                    color = Color.White,
+                    color = Color.Black,
                     fontFamily = AlatsiFont
                 )
             }
