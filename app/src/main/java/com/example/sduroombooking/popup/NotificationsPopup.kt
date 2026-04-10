@@ -33,7 +33,8 @@ fun NotificationsPopup(
     loading: Boolean,
     error: String?,
     onDismiss: () -> Unit,
-    onNotificationClick: (NotificationItem) -> Unit,
+    onNotificationClick: (NotificationItem) -> Unit = {},
+    onDeleteClick: (NotificationItem) -> Unit,
     onAcceptGroupInvite: (NotificationItem) -> Unit,
     onDeclineGroupInvite: (NotificationItem) -> Unit
 ) {
@@ -100,7 +101,7 @@ fun NotificationsPopup(
                                 NotificationRow(
                                     notification = notification,
                                     onClick = { onNotificationClick(notification) },
-                                    onDeleteClick = {onNotificationClick(notification)},
+                                    onDeleteClick = {onDeleteClick(notification)},
                                     onAcceptGroupInvite = { onAcceptGroupInvite(notification) },
                                     onDeclineGroupInvite = { onDeclineGroupInvite(notification) }
                                 )

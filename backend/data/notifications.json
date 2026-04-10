@@ -28,7 +28,7 @@
     "message": "Maria Østergaard Tuesen added you to a booking on 16/4/2026 from 12:00 to 14:00",
     "createdAt": "2026-04-05T23:14:30.837Z",
     "expiresAt": "16/4/2026 14:00",
-    "read": false,
+    "read": true,
     "type": "booking_invite",
     "bookingId": "929a460a-e9d0-4d85-9ec0-16c611d9d93d"
   },
@@ -39,7 +39,7 @@
     "message": "Maria Østergaard Tuesen added you to a booking on 16/4/2026 from 12:00 to 14:00",
     "createdAt": "2026-04-05T23:14:32.247Z",
     "expiresAt": "16/4/2026 14:00",
-    "read": false,
+    "read": true,
     "type": "booking_invite",
     "bookingId": "5b7c0760-60fd-44e3-85d5-e92915c5c21a"
   }
