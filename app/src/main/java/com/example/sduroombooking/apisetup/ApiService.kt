@@ -85,6 +85,12 @@ interface ApiService {
         @Path("notificationId") notificationId: String
     ): Response<Unit>
 
+    @DELETE("users/{id}/notifications/{notificationId}")
+    suspend fun deleteNotification(
+        @Path("id") userId: String,
+        @Path("notificationId") notificationId: String
+    ): Response<Unit>
+
     @DELETE("bookings/{id}")
     suspend fun deleteBooking(@Path("id") id: String): Response<Unit>
 

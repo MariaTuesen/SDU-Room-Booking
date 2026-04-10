@@ -35,11 +35,26 @@ class NotificationsViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 RetrofitClient.api.markNotificationAsRead(userId, notificationId)
+                notifications.value = notifications.value.map {
+                    if (it.id == notificationId) it.copy(read = true) else it
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
 
-                notifications.value = notifications.value.filterNot { it.id == notificationId }
-
-                println("Notification $notificationId removed from UI")
-
+    fun deleteNotification(
+        userId: String,
+        notificationId: String
+    ) {
+        viewModelScope.launch {
+            try {
+                val response = RetrofitClient.api.deleteNotification(userId, notificationId)
+                if (response.isSuccessful) {
+                    notifications.value = notifications.value.filterNot { it.id == notificationId }
+                    println("Notification $notificationId deleted permanently")
+                }
             } catch (e: Exception) {
                 e.printStackTrace()
             }

@@ -8,7 +8,7 @@ const multer = require('multer');
 const fs = require('fs');
 
 const { readFriendsFile, writeFriendsFile, uniq } = require('./models/FriendsStore');
-const { readBookingsFile, writeBookingsFile, hasConflict, removeExpiredBookings } = require('./models/BookingsStore');
+const { readBookingsFile, writeBookingsFile, hasConflict } = require('./models/BookingsStore');
 const { readNotificationsFile, writeNotificationsFile, removeExpiredNotifications } = require('./models/NotificationsStore');
 const { readGroupsFile, writeGroupsFile } = require('./models/GroupsStore');
 
@@ -739,64 +739,6 @@ app.post('/bookings', (req, res) => {
   }
 });
 
-app.post('/bookings/:id', (req, res) =>
-{
-  try
-   {
-    const { id } = req.params;
-    const { userIds } = req.body;
-
-    if (!Array.isArray(userIds))
-     {
-      return res.status(400).json({ message: 'userIds must be an array' });
-    }
-
-    const bookings = readBookingsFile();
-    const index = bookings.findIndex(b => b.id === id);
-
-    if (index === -1)
-    {
-      return res.status(404).json({ message: 'Booking not found' });
-    }
-    bookings[index].userIds = [...new Set(userIds)];
-
-    writeBookingsFile(bookings);
-
-    console.log(`Booking ${id} got updated with new members:`, bookings[index].userIds);
-
-    return res.json(bookings[index]);
-  } catch (err)
-   {
-    console.error('Error with updating booking:', err);
-    return res.status(500).json({ message: 'Failed to update booking' });
-  }
-});
-
-app.delete('/bookings/:id', (req, res) =>
-{
-  try
-   {
-    const { id } = req.params;
-    let bookings = readBookingsFile();
-
-    const originalLength = bookings.length;
-    bookings = bookings.filter(b => b.id !== id);
-
-    if (bookings.length === originalLength)
-     {
-      return res.status(404).json({ message: 'Booking not found' });
-    }
-
-    writeBookingsFile(bookings);
-    return res.sendStatus(204);
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ message: 'Failed to delete booking' });
-  }
-});
-
-
-
 app.get('/users/:id/notifications', (req, res) => {
   try {
     const userId = req.params.id;
@@ -816,45 +758,44 @@ app.get('/users/:id/notifications', (req, res) => {
 });
 
 app.post('/users/:id/notifications/:notificationId/read', (req, res) => {
-  try {
-    const { id, notificationId } = req.params;
-    const notifications = readNotificationsFile();
 
-    console.log('Trying to delete notification ${notificationId} for user ${id}');
+    try {
+        const { id, notificationId } = req.params;
+        const notifications = readNotificationsFile();
+        const index = notifications.findIndex(
+        n => n.id === notificationId && n.userId === id
+        );
 
-   const filtered = notifications.filter(
-   n => !(n.id === notificationId && n.userId === id)
-   );
+        if (index === -1) {
+            return res.status(404).json({ message: 'Notification not found' });
 
-   if(filtered.length === notifications.length)
-   {
-        console.log("No notification found to delete")
-        return res.status(404).json({message: 'Notification not found'});
-   }
+        }
 
-    writeNotificationsFile(filtered);
-    console.log("Notification deleted successfully from JSON")
+        notifications[index].read = true;
+        writeNotificationsFile(notifications);
+        return res.sendStatus(204);
 
-    return res.sendStatus(204);
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ message: 'Failed to mark notification as read' });
-  }
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ message: 'Failed to mark notification as read' });
+    }
 });
+
+app.delete('/users/:id/notifications/:notificationId', (req, res) => {
+    try {
+        const {id, notificationId} = req.params;
+        const notifications = readNotificationsFile();
+        const filtered = notifications.filter(n=> !(n.id === notificationId && n,userId === id));
+
+        writeNotificationsFile(filtered);
+        return res.sendStatus(204);
+    } catch (err) {
+    return res.status(500).json({message: 'Error deleting'});
+   }
+});
+
+
 
 app.listen(3000, '0.0.0.0', () => {
-  console.log('Server running on http://localhost:3000');
-
-  try {
-  removeExpiredBookings();
-  } catch (err) {
-  console.error("Initial cleanup failed:", err)}
+    console.log('Server running on http://localhost:3000');
 });
-
-setInterval(() => {
-  try {
-    removeExpiredBookings();
-  } catch (err) {
-    console.error("Error under cleaning of bookings:", err);
-  }
-}, 60000);
