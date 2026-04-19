@@ -51,6 +51,14 @@ fun HomePage(navController: NavHostController, userVM: UserViewModel, bookingVM:
        sortedBookings.find {it.id == selectedId}
    }
 
+    LaunchedEffect(selectedBooking)
+    {
+        if (selectedBooking == null && showPopup)
+        {
+            showPopup = false
+        }
+    }
+
     LaunchedEffect(Unit)
     {
         roomsVM.fetchRooms()

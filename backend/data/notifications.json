@@ -1,46 +1,13 @@
 [
   {
-    "id": "128533d4-df23-4b23-8611-2a68c073fcf2",
-    "userId": "cef496db-f122-4712-ab40-f3186ff28856",
+    "id": "e885ffe2-bc4c-4408-a85a-21aaa0e8164c",
+    "userId": "39673d52-c0a1-4b37-8692-2532480157a8",
     "title": "New booking",
-    "message": "Sofie Bergquist Madsen added you to a booking on 13/4/2026 from 12:00 to 14:00",
-    "createdAt": "2026-04-05T20:56:23.804Z",
-    "expiresAt": "13/4/2026 14:00",
+    "message": "Sofie Bergquist Madsen added you to a booking on 23/4/2026 from 10:00 to 14:00",
+    "createdAt": "2026-04-14T07:59:24.535Z",
+    "expiresAt": "23/4/2026 14:00",
     "read": false,
     "type": "booking_invite",
-    "bookingId": "281ecf38-acbb-402d-8785-b05768a22e6e"
-  },
-  {
-    "id": "1d3aba57-683b-4783-a08f-3dd8877d7d68",
-    "userId": "2bfbdd9a-e12f-48ef-b536-e0de47ecc938",
-    "title": "New booking",
-    "message": "Sofie Bergquist Madsen added you to a booking on 13/4/2026 from 12:00 to 14:00",
-    "createdAt": "2026-04-05T20:56:23.804Z",
-    "expiresAt": "13/4/2026 14:00",
-    "read": false,
-    "type": "booking_invite",
-    "bookingId": "281ecf38-acbb-402d-8785-b05768a22e6e"
-  },
-  {
-    "id": "981e1144-08de-4843-b1ed-caed6ca74de8",
-    "userId": "64e8ab86-e9c6-41e5-8572-a4c26266e962",
-    "title": "New booking",
-    "message": "Maria Østergaard Tuesen added you to a booking on 16/4/2026 from 12:00 to 14:00",
-    "createdAt": "2026-04-05T23:14:30.837Z",
-    "expiresAt": "16/4/2026 14:00",
-    "read": true,
-    "type": "booking_invite",
-    "bookingId": "929a460a-e9d0-4d85-9ec0-16c611d9d93d"
-  },
-  {
-    "id": "f909f985-70de-431d-b97d-cda28e79a9d5",
-    "userId": "64e8ab86-e9c6-41e5-8572-a4c26266e962",
-    "title": "New booking",
-    "message": "Maria Østergaard Tuesen added you to a booking on 16/4/2026 from 12:00 to 14:00",
-    "createdAt": "2026-04-05T23:14:32.247Z",
-    "expiresAt": "16/4/2026 14:00",
-    "read": true,
-    "type": "booking_invite",
-    "bookingId": "5b7c0760-60fd-44e3-85d5-e92915c5c21a"
+    "bookingId": "9c48f337-b992-450c-91ee-65877ee0c889"
   }
 ]

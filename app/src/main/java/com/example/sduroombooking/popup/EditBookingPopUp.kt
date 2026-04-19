@@ -318,7 +318,7 @@ fun EditBookingPopUp(
 
                                         bookingVM.updateBookingParticipants(
                                             booking = booking,
-                                            newUSerIds = newUserList,
+                                            newUserIds = newUserList,
                                             currentUserId = myId,
                                             onSuccess = {
                                                 peopleQuery = ""
@@ -352,9 +352,13 @@ fun EditBookingPopUp(
 
                                         bookingVM.updateBookingParticipants(
                                             booking = booking,
-                                            newUSerIds = newList,
+                                            newUserIds = newList,
                                             currentUserId = myId,
-                                            onSuccess = { }
+                                            onSuccess = {
+                                                if (user.id == myId) {
+                                                    onDismiss()
+                                                }
+                                            }
                                         )
                                     }
                                 )

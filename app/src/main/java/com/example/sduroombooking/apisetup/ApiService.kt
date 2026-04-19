@@ -98,7 +98,7 @@ interface ApiService {
     suspend fun updateBooking(
         @Path("id") id: String,
         @Body booking: Booking
-    ): Booking
+    ): Response<Booking>
 
     @GET("users/{id}/groups")
     suspend fun getGroups(

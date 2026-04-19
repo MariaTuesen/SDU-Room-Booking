@@ -92,21 +92,34 @@ class BookingViewModel : ViewModel() {
 
     fun updateBookingParticipants(
         booking: Booking,
-        newUSerIds: List<String>,
+        newUserIds: List<String>,
         currentUserId: String,
         onSuccess: () -> Unit
     )
     {
-        viewModelScope.launch {
-            try {
-                val updatedBooking = booking.copy(userIds = newUSerIds)
+        viewModelScope.launch{
+            try
+            {
+                val updatedBooking = booking.copy(userIds = newUserIds)
+                val response = RetrofitClient.api.updateBooking(booking.id, updatedBooking)
 
-                RetrofitClient.api.updateBooking(booking.id, updatedBooking)
+                if (newUserIds.isEmpty() || response.isSuccessful)
+                {
+                    val currentList = currentUserBookings.value.toMutableList()
 
-                fetchUserBookings(currentUserId)
+                    if (newUserIds.contains(currentUserId))
+                    {
+                        val index = currentList.indexOfFirst { it.id == booking.id }
+                        if (index != -1) currentList[index] = updatedBooking
+                    } else
+                    {
+                        currentList.removeAll { it.id == booking.id }
+                    }
+                    currentUserBookings.value = currentList
 
-                onSuccess()
-            } catch (e: Exception){
+                    onSuccess()
+                }
+            } catch (e: Exception) {
                 e.printStackTrace()
             }
         }

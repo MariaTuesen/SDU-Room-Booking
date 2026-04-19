@@ -54,6 +54,13 @@ function removeExpiredBookings()
     });
 
  const filteredBookings = bookings.filter(b => {
+
+ if (!b.userIds || b.userIds.length === 0)
+ {
+   console.log(`[Auto-cleanup] Removing empty booking: ${b.id}`);
+    return false
+ }
+
  const [d, m, y] = b.date.split('/').map(Number);
 
  if (y > currentYear) return true;

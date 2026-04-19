@@ -8,7 +8,7 @@ const multer = require('multer');
 const fs = require('fs');
 
 const { readFriendsFile, writeFriendsFile, uniq } = require('./models/FriendsStore');
-const { readBookingsFile, writeBookingsFile, hasConflict } = require('./models/BookingsStore');
+const { readBookingsFile, writeBookingsFile, hasConflict, removeExpiredBookings } = require('./models/BookingsStore');
 const { readNotificationsFile, writeNotificationsFile, removeExpiredNotifications } = require('./models/NotificationsStore');
 const { readGroupsFile, writeGroupsFile } = require('./models/GroupsStore');
 
@@ -739,6 +739,69 @@ app.post('/bookings', (req, res) => {
   }
 });
 
+app.post('/bookings/:id', (req, res) =>
+{
+  try
+   {
+    const { id } = req.params;
+    const { userIds } = req.body;
+
+    if (!Array.isArray(userIds))
+     {
+      return res.status(400).json({ message: 'userIds must be an array' });
+    }
+
+    let bookings = readBookingsFile();
+    const index = bookings.findIndex(b => b.id === id);
+
+    if (index === -1)
+    {
+      return res.status(404).json({ message: 'Booking not found' });
+    }
+   if (index === -1) {
+         return res.status(404).json({ message: 'Booking not found' });
+       }
+
+       if (userIds.length === 0) {
+         bookings = bookings.filter(b => b.id !== id);
+         writeBookingsFile(bookings);
+         console.log(`Booking ${id} deleted, because it was empty.`);
+         return res.sendStatus(204);
+       }
+
+       bookings[index].userIds = [...new Set(userIds)];
+       writeBookingsFile(bookings);
+
+       return res.json(bookings[index]);
+     } catch (err) {
+       console.error('Error updating booking:', err);
+       return res.status(500).json({ message: 'Failed to update booking' });
+     }
+});
+
+app.delete('/bookings/:id', (req, res) =>
+{
+  try
+   {
+    const { id } = req.params;
+    let bookings = readBookingsFile();
+
+    const originalLength = bookings.length;
+    bookings = bookings.filter(b => b.id !== id);
+
+    if (bookings.length === originalLength)
+     {
+      return res.status(404).json({ message: 'Booking not found' });
+    }
+
+    writeBookingsFile(bookings);
+    return res.sendStatus(204);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Failed to delete booking' });
+  }
+});
+
 app.get('/users/:id/notifications', (req, res) => {
   try {
     const userId = req.params.id;
@@ -785,7 +848,7 @@ app.delete('/users/:id/notifications/:notificationId', (req, res) => {
     try {
         const {id, notificationId} = req.params;
         const notifications = readNotificationsFile();
-        const filtered = notifications.filter(n=> !(n.id === notificationId && n,userId === id));
+        const filtered = notifications.filter(n=> !(n.id === notificationId && n.userId === id));
 
         writeNotificationsFile(filtered);
         return res.sendStatus(204);
