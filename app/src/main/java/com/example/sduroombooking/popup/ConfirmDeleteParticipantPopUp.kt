@@ -46,7 +46,7 @@ fun ConfirmDeleteParticipantPopUp(
         )
         {
             Text(
-                text = "You are about to remove $userName from this group do you want to remove them?",
+                text = "Are you sure you want to remove $userName from this booking?",
                 style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Black),
                 textAlign = TextAlign.Center
             )

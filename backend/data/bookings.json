@@ -1,33 +1,14 @@
 [
   {
-    "id": "929a460a-e9d0-4d85-9ec0-16c611d9d93d",
-    "roomId": 2,
-    "date": "16/4/2026",
-    "startTime": "12:00",
-    "endTime": "14:00",
-    "userIds": [],
-    "createdAt": "2026-04-05T23:14:30.836Z"
-  },
-  {
-    "id": "bdeaa4f5-7eb8-4286-a0be-df0e736f85b5",
-    "roomId": 4,
-    "date": "16/4/2026",
-    "startTime": "12:00",
-    "endTime": "14:00",
+    "id": "b78daa4c-b370-459e-ad3c-dd346c719858",
+    "roomId": 7,
+    "date": "20/4/2026",
+    "startTime": "11:30",
+    "endTime": "12:30",
     "userIds": [
-      "39673d52-c0a1-4b37-8692-2532480157a8"
-    ],
-    "createdAt": "2026-04-05T23:14:33.385Z"
-  },
-  {
-    "id": "f3b1a173-fabd-476d-b47c-19d61e1e15b8",
-    "roomId": 4,
-    "date": "29/4/2026",
-    "startTime": "12:00",
-    "endTime": "14:30",
-    "userIds": [
+      "39673d52-c0a1-4b37-8692-2532480157a8",
       "64e8ab86-e9c6-41e5-8572-a4c26266e962"
     ],
-    "createdAt": "2026-04-18T23:50:03.520Z"
+    "createdAt": "2026-04-19T17:32:03.703Z"
   }
 ]

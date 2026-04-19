@@ -9,6 +9,9 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -64,6 +67,7 @@ fun CreateBooking(
 ) {
     val outlineShape = RoundedCornerShape(12.dp)
     val context = LocalContext.current
+    val bottomNavPadding = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
     var selectedDate by rememberSaveable { mutableStateOf<String?>(null) }
     var startTime by rememberSaveable { mutableStateOf<String?>(null) }
@@ -251,7 +255,10 @@ fun CreateBooking(
             .statusBarsPadding()
             .padding(horizontal = 18.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp),
-        contentPadding = PaddingValues(top = 18.dp, bottom = 24.dp)
+        contentPadding = PaddingValues(
+            top = 18.dp,
+            bottom = bottomNavPadding + 85.dp
+        )
     ) {
         item {
             Text(

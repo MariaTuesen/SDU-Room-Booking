@@ -92,7 +92,7 @@ fun LoginScreen(
                     userVM.login(email, password,
                         onSuccess = {
                             errorMessage = null
-                            navController.navigate(Destination.CREATEBOOKING.route)
+                            navController.navigate(Destination.HOME.route)
                         },
                         onError = { msg ->
                             errorMessage = msg
@@ -114,7 +114,7 @@ fun LoginScreen(
                     text = "Sign up",
                     fontFamily = AlatsiFont,
                     color = AppGreen,
-                    modifier = Modifier.clickable { navController.navigate(Destination.CREATEACCOUNT.route) }
+                    modifier = Modifier.clickable { navController.navigate(Destination.HOME.route) }
                 )
             }
         }
