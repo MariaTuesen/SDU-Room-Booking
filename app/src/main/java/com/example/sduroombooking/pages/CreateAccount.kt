@@ -28,6 +28,7 @@ import com.example.sduroombooking.viewmodel.UserViewModel
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.ui.semantics.Role
+import com.example.sduroombooking.validation.validateSignup
 
 @Composable
 fun CreateAccount(
@@ -174,24 +175,20 @@ fun CreateAccount(
             Button(
                 enabled = acceptedTerms,
                 onClick = {
-                    if (!acceptedTerms) {
-                        errorMessage = "You must accept the terms and conditions"
-                        return@Button
-                    }
-                    if (!email.endsWith("@student.sdu.dk")) {
-                        errorMessage = "Only SDU student emails allowed"
-                        return@Button
-                    }
+                    val error = validateSignup(email, password, confirmPassword, acceptedTerms)
 
-                    if (password != confirmPassword) {
-                        errorMessage = "Passwords do not match"
+                    if (error != null) {
+                        errorMessage = error
                         return@Button
                     }
 
                     errorMessage = null
 
-                    userVM.signup(fullName, email, password,
-                        onSuccess = { navController.navigate(Destination.PROFILE.route) },
+                    userVM.signup(
+                        fullName,
+                        email,
+                        password,
+                        onSuccess = { navController.navigate(Destination.HOME.route) },
                         onError = { msg -> errorMessage = msg }
                     )
                 },
