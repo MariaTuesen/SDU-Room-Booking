@@ -1,6 +1,7 @@
 package com.example.sduroombooking
 
 import com.example.sduroombooking.validation.validateSignup
+import junit.framework.TestCase.assertEquals
 import org.junit.Assert
 import org.junit.Test
 
