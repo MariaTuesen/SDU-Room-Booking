@@ -1,25 +1,9 @@
 package com.example.sduroombooking.apisetup
 
-import com.example.sduroombooking.dataclasses.LoginRequest
-import com.example.sduroombooking.dataclasses.User
-import com.example.sduroombooking.dataclasses.UserCreate
-import com.example.sduroombooking.dataclasses.Room
+import com.example.sduroombooking.dataclasses.*
 import okhttp3.MultipartBody
 import retrofit2.Response
-import retrofit2.http.Body
-import retrofit2.http.DELETE
-import retrofit2.http.GET
-import retrofit2.http.Multipart
-import retrofit2.http.POST
-import retrofit2.http.Part
-import retrofit2.http.Path
-import com.example.sduroombooking.dataclasses.Booking
-import com.example.sduroombooking.dataclasses.CreateBookingRequest
-import retrofit2.http.Query
-import com.example.sduroombooking.dataclasses.NotificationItem
-import com.example.sduroombooking.dataclasses.Group
-import com.example.sduroombooking.dataclasses.CreateGroupRequest
-import com.example.sduroombooking.dataclasses.GroupInviteRequest
+import retrofit2.http.*
 
 data class SignupResponse(
     val message: String,
@@ -28,12 +12,14 @@ data class SignupResponse(
 
 interface ApiService {
 
+    //AUTH
     @POST("auth/signup")
     suspend fun signup(@Body user: UserCreate): SignupResponse
 
     @POST("auth/login")
     suspend fun login(@Body credentials: LoginRequest): User
 
+    //USERS
     @GET("users")
     suspend fun getAllUsers(): List<User>
 
@@ -62,9 +48,11 @@ interface ApiService {
         @Path("friendId") friendId: String
     ): Response<Unit>
 
+    //ROOMS
     @GET("rooms")
     suspend fun getRooms(): List<Room>
 
+    //BOOKINGS
     @GET("bookings")
     suspend fun getBookings(
         @Query("date") date: String? = null,
@@ -72,33 +60,44 @@ interface ApiService {
     ): List<Booking>
 
     @POST("bookings")
-    suspend fun createBooking(@Body req: CreateBookingRequest): Booking
-
-    @GET("users/{id}/notifications")
-    suspend fun getNotifications(
-        @Path("id") id: String
-    ): List<NotificationItem>
-
-    @POST("users/{id}/notifications/{notificationId}/read")
-    suspend fun markNotificationAsRead(
-        @Path("id") id: String,
-        @Path("notificationId") notificationId: String
-    ): Response<Unit>
-
-    @DELETE("users/{id}/notifications/{notificationId}")
-    suspend fun deleteNotification(
-        @Path("id") userId: String,
-        @Path("notificationId") notificationId: String
-    ): Response<Unit>
-
-    @DELETE("bookings/{id}")
-    suspend fun deleteBooking(@Path("id") id: String): Response<Unit>
+    suspend fun createBooking(
+        @Body req: CreateBookingRequest
+    ): Booking
 
     @POST("bookings/{id}")
     suspend fun updateBooking(
         @Path("id") id: String,
         @Body booking: Booking
     ): Response<Booking>
+
+    @DELETE("bookings/{id}")
+    suspend fun deleteBooking(
+        @Path("id") id: String
+    ): Response<Unit>
+
+    //NOTIFICATIONS
+    @GET("notifications/{userId}")
+    suspend fun getNotifications(
+        @Path("userId") userId: String
+    ): List<NotificationItem>
+
+    @POST("notifications/{userId}/{notificationId}/read")
+    suspend fun markNotificationAsRead(
+        @Path("userId") userId: String,
+        @Path("notificationId") notificationId: String
+    ): Response<Unit>
+
+    @DELETE("notifications/{userId}/{notificationId}")
+    suspend fun deleteNotification(
+        @Path("userId") userId: String,
+        @Path("notificationId") notificationId: String
+    ): Response<Unit>
+
+    //GROUPS
+    @GET("groups/{groupId}")
+    suspend fun getGroupById(
+        @Path("groupId") groupId: String
+    ): Group
 
     @GET("users/{id}/groups")
     suspend fun getGroups(
@@ -116,26 +115,22 @@ interface ApiService {
         @Body req: GroupInviteRequest
     ): Response<Unit>
 
-    @POST("users/{id}/notifications/{notificationId}/accept-group-invite")
+    //GROUP INVITES
+    @POST("groups/accept/{userId}/{notificationId}")
     suspend fun acceptGroupInvite(
-        @Path("id") userId: String,
+        @Path("userId") userId: String,
         @Path("notificationId") notificationId: String
     ): Group
 
-    @GET("groups/{groupId}")
-    suspend fun getGroupById(
-        @Path("groupId") groupId: String
-    ): Group
+    @POST("groups/decline/{userId}/{notificationId}")
+    suspend fun declineGroupInvite(
+        @Path("userId") userId: String,
+        @Path("notificationId") notificationId: String
+    ): Response<Unit>
 
     @DELETE("groups/{groupId}/members/{userId}")
     suspend fun leaveGroup(
         @Path("groupId") groupId: String,
         @Path("userId") userId: String
-    ): Response<Unit>
-
-    @POST("notifications/{userId}/{notificationId}/decline")
-    suspend fun declineGroupInvite(
-        @Path("userId") userId: String,
-        @Path("notificationId") notificationId: String
     ): Response<Unit>
 }
