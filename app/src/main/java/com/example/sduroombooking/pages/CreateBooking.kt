@@ -55,6 +55,8 @@ import com.example.sduroombooking.viewmodel.GroupViewModel
 import com.example.sduroombooking.viewmodel.RoomsViewModel
 import com.example.sduroombooking.viewmodel.UserViewModel
 import java.util.Calendar
+import com.example.sduroombooking.validation.validateBookingTime
+import com.example.sduroombooking.validation.validateBookingInputs
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -330,27 +332,16 @@ fun CreateBooking(
                                                 val endTotal = endH * 60 + endM
                                                 val duration = endTotal - startTotal
 
-                                                when {
-                                                    endTotal <= startTotal -> {
-                                                        Toast.makeText(
-                                                            context,
-                                                            "End time must be after start time",
-                                                            Toast.LENGTH_SHORT
-                                                        ).show()
-                                                    }
+                                                val startStr = String.format("%02d:%02d", startH, startM)
+                                                val endStr = String.format("%02d:%02d", endH, endM)
 
-                                                    duration > 240 -> {
-                                                        Toast.makeText(
-                                                            context,
-                                                            "You can only reserve up to 4 hours",
-                                                            Toast.LENGTH_SHORT
-                                                        ).show()
-                                                    }
+                                                val error = validateBookingTime(startStr, endStr)
 
-                                                    else -> {
-                                                        startTime = String.format("%02d:%02d", startH, startM)
-                                                        endTime = String.format("%02d:%02d", endH, endM)
-                                                    }
+                                                if (error != null) {
+                                                    Toast.makeText(context, error, Toast.LENGTH_SHORT).show()
+                                                } else {
+                                                    startTime = startStr
+                                                    endTime = endStr
                                                 }
                                             },
                                             startH,
@@ -680,6 +671,18 @@ fun CreateBooking(
             ) {
                 Button(
                     onClick = {
+                        val error = validateBookingInputs(
+                            selectedDate,
+                            startTime,
+                            endTime,
+                            location,
+                            building
+                        )
+
+                        if (error != null) {
+                            Toast.makeText(context, error, Toast.LENGTH_SHORT).show()
+                            return@Button
+                        }
                         val all = roomsViewModel.allRooms.value
                         val requiredSeats = 1 + invitedUserIds.size
                         val wantedLocation = location.trim()
