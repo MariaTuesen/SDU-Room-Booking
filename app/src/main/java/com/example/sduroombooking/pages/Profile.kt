@@ -169,6 +169,7 @@ fun Profile(
                         invitedUserIds = selectedFriendIds,
                         onSuccess = {
                             showCreateGroupDialog = false
+                            groupViewModel.fetchGroups(user.id)
                         }
                     )
                 }

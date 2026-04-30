@@ -99,7 +99,7 @@ interface ApiService {
         @Path("groupId") groupId: String
     ): Group
 
-    @GET("users/{id}/groups")
+    @GET("groups/users/{id}")
     suspend fun getGroups(
         @Path("id") id: String
     ): List<Group>

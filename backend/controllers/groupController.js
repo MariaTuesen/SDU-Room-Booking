@@ -123,14 +123,26 @@ exports.acceptInvite = (req, res) => {
     const notifications = readNotificationsFile();
     const groupsData = getGroups();
 
-    const notification = notifications.find(n => n.id === notificationId);
+    const notificationIndex = notifications.findIndex(n => n.id === notificationId);
+    if (notificationIndex === -1) {
+      return res.status(404).json({ message: 'Notification not found' });
+    }
+
+    const notification = notifications[notificationIndex];
 
     const group = groupsData.groups.find(g => g.id === notification.groupId);
+    if (!group) {
+      return res.status(404).json({ message: 'Group not found' });
+    }
 
     const participant = group.participants.find(p => p.userId === userId);
     if (participant) participant.status = 'accepted';
 
+    notifications.splice(notificationIndex, 1);
+
     writeGroupsFile(groupsData);
+    writeNotificationsFile(notifications);
+
     res.json(group);
   } catch {
     res.status(500).json({ message: 'Failed to accept invite' });
@@ -144,13 +156,26 @@ exports.declineInvite = (req, res) => {
     const notifications = readNotificationsFile();
     const groupsData = getGroups();
 
-    const notification = notifications.find(n => n.id === notificationId);
+    const notificationIndex = notifications.findIndex(n => n.id === notificationId);
+    if (notificationIndex === -1) {
+      return res.status(404).json({ message: 'Notification not found' });
+    }
+
+    const notification = notifications[notificationIndex];
+
     const group = groupsData.groups.find(g => g.id === notification.groupId);
+    if (!group) {
+      return res.status(404).json({ message: 'Group not found' });
+    }
 
     const participant = group.participants.find(p => p.userId === userId);
     if (participant) participant.status = 'declined';
 
+    notifications.splice(notificationIndex, 1);
+
     writeGroupsFile(groupsData);
+    writeNotificationsFile(notifications);
+
     res.sendStatus(204);
   } catch {
     res.status(500).json({ message: 'Failed to decline invite' });

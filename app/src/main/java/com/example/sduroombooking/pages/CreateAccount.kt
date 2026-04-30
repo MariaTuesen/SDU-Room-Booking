@@ -191,7 +191,7 @@ fun CreateAccount(
                     errorMessage = null
 
                     userVM.signup(fullName, email, password,
-                        onSuccess = { navController.navigate(Destination.PROFILE.route) },
+                        onSuccess = { navController.navigate(Destination.HOME.route) },
                         onError = { msg -> errorMessage = msg }
                     )
                 },
