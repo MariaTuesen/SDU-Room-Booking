@@ -114,7 +114,7 @@ fun LoginScreen(
                     text = "Sign up",
                     fontFamily = AlatsiFont,
                     color = AppGreen,
-                    modifier = Modifier.clickable { navController.navigate(Destination.HOME.route) }
+                    modifier = Modifier.clickable { navController.navigate(Destination.CREATEACCOUNT.route) }
                 )
             }
         }
