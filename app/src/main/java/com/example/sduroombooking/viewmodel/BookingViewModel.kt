@@ -10,7 +10,7 @@ import com.example.sduroombooking.dataclasses.User
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
 
-class BookingViewModel : ViewModel() {
+open class BookingViewModel : ViewModel() {
 
     var currentUser = mutableStateOf<User?>(null)
 
