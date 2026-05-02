@@ -13,6 +13,20 @@
           "status": "accepted"
         }
       ]
+    },
+    {
+      "id": "6b8548b2-55a5-47b3-b88b-43fb7922048f",
+      "name": "1",
+      "participants": [
+        {
+          "userId": "64e8ab86-e9c6-41e5-8572-a4c26266e962",
+          "status": "accepted"
+        },
+        {
+          "userId": "39673d52-c0a1-4b37-8692-2532480157a8",
+          "status": "declined"
+        }
+      ]
     }
   ]
 }

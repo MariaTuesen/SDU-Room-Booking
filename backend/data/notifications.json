@@ -1,1 +1,13 @@
-[]
+[
+  {
+    "id": "5b9a392c-f0e0-4e39-924f-28f3dca5b88e",
+    "userId": "39673d52-c0a1-4b37-8692-2532480157a8",
+    "title": "New booking",
+    "message": "Sofie Bergquist Madsen added you to a booking on 12/5/2026 from 12:00 to 13:30",
+    "createdAt": "2026-05-02T19:22:14.282Z",
+    "expiresAt": "12/5/2026 13:30",
+    "read": true,
+    "type": "booking_invite",
+    "bookingId": "4c516200-510a-4704-95df-8c4c8db9ea30"
+  }
+]
