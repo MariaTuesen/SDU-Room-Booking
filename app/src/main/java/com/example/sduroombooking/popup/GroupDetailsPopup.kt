@@ -174,7 +174,7 @@ fun GroupDetailsPopup(
                 ) {
                     Text(
                         text = "Add people",
-                        color = Color.White,
+                        color = Color.Black,
                         fontFamily = AlatsiFont
                     )
                 }
@@ -215,7 +215,7 @@ fun GroupDetailsPopup(
                 ) {
                     Text(
                         text = "Leave",
-                        color = Color.White,
+                        color = Color.Black,
                         fontFamily = AlatsiFont
                     )
                 }

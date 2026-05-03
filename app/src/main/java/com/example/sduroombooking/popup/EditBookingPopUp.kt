@@ -531,9 +531,8 @@ fun ParticipantItem(
 fun StatusButton(text: String, color: Color, onClick: () -> Unit)
 {
     Surface(
+        color = color,
         shape = RoundedCornerShape(8.dp),
-        border = BorderStroke(1.5.dp, color),
-        color = TextFieldGrey,
         modifier = Modifier.clickable {onClick()}
     )
     {
