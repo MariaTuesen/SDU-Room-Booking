@@ -15,3 +15,7 @@ val TextGrey = Color(0xFFADA9A9)
 val TextFieldGrey = Color(0xFFD9D9D9)
 val PopupGrey = Color(0xFFD9D9D9)
 
+val ReportYellow = Color(0xFFFEE153)
+
+val CancelRed = Color(0xFFFE22F2F)
+

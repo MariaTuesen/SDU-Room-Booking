@@ -60,6 +60,8 @@ import com.example.sduroombooking.R
 import com.example.sduroombooking.dataclasses.Booking
 import com.example.sduroombooking.dataclasses.User
 import com.example.sduroombooking.ui.theme.AppGreen
+import com.example.sduroombooking.ui.theme.CancelRed
+import com.example.sduroombooking.ui.theme.ReportYellow
 import com.example.sduroombooking.ui.theme.TextFieldGrey
 import com.example.sduroombooking.viewmodel.BookingViewModel
 import com.example.sduroombooking.viewmodel.UserViewModel
@@ -369,13 +371,13 @@ fun EditBookingPopUp(
                     ) {
                         StatusButton(
                             text = "Report issue",
-                            color = Color.Yellow,
+                            color = ReportYellow,
                             onClick = { showReportIssue = true }
                         )
 
                         StatusButton(
                             text = "Cancel booking",
-                            color = Color.Red,
+                            color = CancelRed,
                             onClick = { showConfirmDelete = true }
                         )
                     }
