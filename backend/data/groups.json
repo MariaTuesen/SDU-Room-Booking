@@ -34,7 +34,21 @@
         },
         {
           "userId": "39673d52-c0a1-4b37-8692-2532480157a8",
-          "status": "pending"
+          "status": "declined"
+        }
+      ]
+    },
+    {
+      "id": "5829d214-e545-4e66-9c8c-8a391b4e09c2",
+      "name": "hej",
+      "participants": [
+        {
+          "userId": "64e8ab86-e9c6-41e5-8572-a4c26266e962",
+          "status": "accepted"
+        },
+        {
+          "userId": "39673d52-c0a1-4b37-8692-2532480157a8",
+          "status": "accepted"
         }
       ]
     }

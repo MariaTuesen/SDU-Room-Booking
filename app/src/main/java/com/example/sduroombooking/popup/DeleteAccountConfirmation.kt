@@ -122,7 +122,7 @@ fun DeleteAccountConfirmationPopup(
                         ),
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text("Delete", color = Color.White, fontFamily = AlatsiFont)
+                        Text("Delete", color = Color.Black, fontFamily = AlatsiFont)
                     }
                 }
             }
