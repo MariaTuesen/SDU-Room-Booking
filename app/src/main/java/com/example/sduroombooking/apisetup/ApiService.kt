@@ -33,6 +33,7 @@ interface ApiService {
     @DELETE("users/{id}")
     suspend fun deleteUser(@Path("id") id: String): Response<Unit>
 
+    //FRIENDS
     @GET("users/{id}/friends")
     suspend fun getFriends(@Path("id") id: String): List<User>
 
@@ -115,7 +116,6 @@ interface ApiService {
         @Body req: GroupInviteRequest
     ): Response<Unit>
 
-    //GROUP INVITES
     @POST("groups/accept/{userId}/{notificationId}")
     suspend fun acceptGroupInvite(
         @Path("userId") userId: String,

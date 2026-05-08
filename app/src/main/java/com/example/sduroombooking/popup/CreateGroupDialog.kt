@@ -96,7 +96,7 @@ fun CreateGroupDialog(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
-                    text = "Invite friends",
+                    text = "Invite favorites",
                     fontFamily = AlatsiFont
                 )
 
