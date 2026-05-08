@@ -57,6 +57,9 @@ import com.example.sduroombooking.viewmodel.UserViewModel
 import java.util.Calendar
 import com.example.sduroombooking.validation.validateBookingTime
 import com.example.sduroombooking.validation.validateBookingInputs
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.ui.input.pointer.pointerInput
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -92,6 +95,8 @@ fun CreateBooking(
 
     var filteredRooms by rememberSaveable { mutableStateOf<List<Room>>(emptyList()) }
     var searchedOnce by rememberSaveable { mutableStateOf(false) }
+
+    val focusManager = LocalFocusManager.current
 
     LaunchedEffect(Unit) {
         userViewModel.fetchAllUsers()
@@ -253,549 +258,592 @@ fun CreateBooking(
         disabledContentColor = Color.White
     )
 
-    LazyColumn(
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .statusBarsPadding()
-            .padding(horizontal = 18.dp),
-        verticalArrangement = Arrangement.spacedBy(14.dp),
-        contentPadding = PaddingValues(
-            top = 18.dp,
-            bottom = bottomNavPadding + 85.dp
-        )
+            .pointerInput(Unit) {
+                detectTapGestures {
+                    focusManager.clearFocus()
+                }
+            }
     ) {
-        item {
-            Text(
-                text = "Create booking",
-                style = MaterialTheme.typography.headlineLarge.copy(
-                    fontWeight = FontWeight.ExtraBold
-                )
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .statusBarsPadding()
+                .padding(horizontal = 18.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp),
+            contentPadding = PaddingValues(
+                top = 18.dp,
+                bottom = bottomNavPadding + 85.dp
             )
-        }
-
-        item {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(
-                        imageVector = Icons.Outlined.CalendarMonth,
-                        contentDescription = "Pick date",
-                        tint = AppGreen,
-                        modifier = Modifier
-                            .size(40.dp)
-                            .clickable {
-                                val today = Calendar.getInstance()
-                                val maxCalendar = Calendar.getInstance().apply {
-                                    add(Calendar.MONTH, 1)
-                                }
-
-                                val dialog = DatePickerDialog(
-                                    context,
-                                    { _, year, month, dayOfMonth ->
-                                        selectedDate = "$dayOfMonth/${month + 1}/$year"
-                                    },
-                                    today.get(Calendar.YEAR),
-                                    today.get(Calendar.MONTH),
-                                    today.get(Calendar.DAY_OF_MONTH)
-                                )
-                                dialog.datePicker.minDate = today.timeInMillis
-                                dialog.datePicker.maxDate = maxCalendar.timeInMillis
-                                dialog.show()
-                            }
+        ) {
+            item {
+                Text(
+                    text = "Create booking",
+                    style = MaterialTheme.typography.headlineLarge.copy(
+                        fontWeight = FontWeight.ExtraBold
                     )
-
-                    selectedDate?.let {
-                        Spacer(Modifier.height(6.dp))
-                        Text(it, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                    }
-                }
-
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(
-                        imageVector = Icons.Outlined.AccessTime,
-                        contentDescription = "Pick start and end time",
-                        tint = AppGreen,
-                        modifier = Modifier
-                            .size(40.dp)
-                            .clickable {
-                                val cal = Calendar.getInstance()
-
-                                TimePickerDialog(
-                                    context,
-                                    { _, startH, startM ->
-                                        val startTotal = startH * 60 + startM
-
-                                        TimePickerDialog(
-                                            context,
-                                            { _, endH, endM ->
-                                                val endTotal = endH * 60 + endM
-                                                val duration = endTotal - startTotal
-
-                                                val startStr = String.format("%02d:%02d", startH, startM)
-                                                val endStr = String.format("%02d:%02d", endH, endM)
-
-                                                val error = validateBookingTime(startStr, endStr)
-
-                                                if (error != null) {
-                                                    Toast.makeText(context, error, Toast.LENGTH_SHORT).show()
-                                                } else {
-                                                    startTime = startStr
-                                                    endTime = endStr
-                                                }
-                                            },
-                                            startH,
-                                            startM,
-                                            true
-                                        ).show()
-                                    },
-                                    cal.get(Calendar.HOUR_OF_DAY),
-                                    cal.get(Calendar.MINUTE),
-                                    true
-                                ).show()
-                            }
-                    )
-
-                    if (startTime != null && endTime != null) {
-                        Spacer(Modifier.height(6.dp))
-                        Text("$startTime - $endTime")
-                    }
-                }
+                )
             }
-        }
 
-        item {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                ExposedDropdownMenuBox(
-                    expanded = peopleExpanded,
-                    onExpandedChange = { peopleExpanded = it },
-                    modifier = Modifier.weight(1f)
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    OutlinedTextField(
-                        value = peopleQuery,
-                        onValueChange = {
-                            peopleQuery = it
-                            peopleExpanded = true
-                        },
-                        textStyle = LocalTextStyle.current.copy(fontFamily = AlatsiFont),
-                        placeholder = {
-                            Text(
-                                "Search for people...",
-                                fontFamily = AlatsiFont,
-                                color = TextFieldGrey
-                            )
-                        },
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Default.Search,
-                                contentDescription = "Search",
-                                tint = TextFieldGrey
-                            )
-                        },
-                        singleLine = true,
-                        shape = RoundedCornerShape(14.dp),
-                        modifier = Modifier
-                            .menuAnchor()
-                            .fillMaxWidth()
-                            .border(2.dp, AppGreen, RoundedCornerShape(14.dp))
-                            .onFocusChanged { if (it.isFocused) peopleExpanded = true },
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = AppGreen,
-                            unfocusedBorderColor = AppGreen,
-                            focusedContainerColor = Color(0xFFD9D9D9).copy(alpha = 0.3f),
-                            unfocusedContainerColor = Color(0xFFD9D9D9).copy(alpha = 0.3f)
-                        )
-                    )
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Icon(
+                            imageVector = Icons.Outlined.CalendarMonth,
+                            contentDescription = "Pick date",
+                            tint = AppGreen,
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clickable {
+                                    val today = Calendar.getInstance()
+                                    val maxCalendar = Calendar.getInstance().apply {
+                                        add(Calendar.MONTH, 1)
+                                    }
 
-                    ExposedDropdownMenu(
-                        expanded = peopleExpanded,
-                        onDismissRequest = { peopleExpanded = false }
-                    ) {
-                        when {
-                            loadingUsers -> {
-                                DropdownMenuItem(
-                                    text = { Text("Loading...", fontFamily = AlatsiFont) },
-                                    onClick = {}
-                                )
-                            }
-
-                            candidatePeople.isEmpty() -> {
-                                DropdownMenuItem(
-                                    text = { Text("No users found", fontFamily = AlatsiFont) },
-                                    onClick = {}
-                                )
-                            }
-
-                            else -> {
-                                candidatePeople.forEach { user ->
-                                    val isFriend = userViewModel.isFriend(user.id)
-                                    DropdownMenuItem(
-                                        text = { PersonDropdownRow(user = user, isFriend = isFriend) },
-                                        onClick = {
-                                            if (selectedPeople.none { it.id == user.id }) {
-                                                selectedPeople.add(user)
-                                            }
-                                            excludedGroupMemberIds.remove(user.id)
-                                            peopleQuery = ""
-                                            peopleExpanded = true
-                                        }
+                                    val dialog = DatePickerDialog(
+                                        context,
+                                        { _, year, month, dayOfMonth ->
+                                            selectedDate = "$dayOfMonth/${month + 1}/$year"
+                                        },
+                                        today.get(Calendar.YEAR),
+                                        today.get(Calendar.MONTH),
+                                        today.get(Calendar.DAY_OF_MONTH)
                                     )
+                                    dialog.datePicker.minDate = today.timeInMillis
+                                    dialog.datePicker.maxDate = maxCalendar.timeInMillis
+                                    dialog.show()
                                 }
-                            }
-                        }
-                    }
-                }
+                        )
 
-                Box(
-                    modifier = Modifier.wrapContentSize(Alignment.Center)
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.groups),
-                        contentDescription = "Select groups",
-                        tint = Color.Black,
-                        modifier = Modifier
-                            .size(40.dp)
-                            .align(Alignment.Center)
-                            .clickable { groupExpanded = true }
-                    )
-
-                    DropdownMenu(
-                        expanded = groupExpanded,
-                        onDismissRequest = { groupExpanded = false }
-                    ) {
-                        groups.forEach { group ->
-                            val isSelected = selectedGroups.any { it.id == group.id }
-
-                            DropdownMenuItem(
-                                text = {
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.SpaceBetween
-                                    ) {
-                                        Text(
-                                            text = group.name,
-                                            fontFamily = AlatsiFont
-                                        )
-
-                                        if (isSelected) {
-                                            Icon(
-                                                imageVector = Icons.Default.Star,
-                                                contentDescription = "Selected",
-                                                tint = AppGreen,
-                                                modifier = Modifier.size(18.dp)
-                                            )
-                                        }
-                                    }
-                                },
-                                onClick = {
-                                    if (isSelected) {
-                                        selectedGroups.removeAll { it.id == group.id }
-                                    } else {
-                                        selectedGroups.add(group)
-                                    }
-                                }
+                        if (selectedDate == null) {
+                            Text(
+                                text = "XX/XX/XXXX",
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    fontFamily = AlatsiFont,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.Black
+                                )
                             )
                         }
-                    }
-                }
-            }
-        }
 
-        item {
-            LazyRow(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                contentPadding = PaddingValues(horizontal = 4.dp)
-            ) {
-                items(invitedUsers, key = { it.id }) { person ->
-                    BookingPersonItemUser(
-                        user = person,
-                        onRemove = {
-                            selectedPeople.removeAll { it.id == person.id }
-                            if (selectedGroups.any { group -> person.id in group.memberIds }) {
-                                if (person.id !in excludedGroupMemberIds) {
-                                    excludedGroupMemberIds.add(person.id)
-                                }
-                            }
-                        },
-                        removable = true
-                    )
-                }
-            }
-        }
-
-        item {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    "Location",
-                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Black)
-                )
-                Text(
-                    "Building",
-                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Black)
-                )
-            }
-        }
-
-        item {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(14.dp)
-            ) {
-                ExposedDropdownMenuBox(
-                    expanded = locationExpanded,
-                    onExpandedChange = { locationExpanded = !locationExpanded },
-                    modifier = Modifier.weight(1f)
-                ) {
-                    OutlinedTextField(
-                        value = location,
-                        onValueChange = {},
-                        readOnly = true,
-                        enabled = locationsFromJson.isNotEmpty(),
-                        placeholder = { Text("Select location") },
-                        trailingIcon = {
-                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = locationExpanded)
-                        },
-                        shape = outlineShape,
-                        colors = textFieldColors,
-                        modifier = Modifier
-                            .menuAnchor()
-                            .fillMaxWidth()
-                            .border(2.dp, AppGreen, outlineShape)
-                    )
-
-                    ExposedDropdownMenu(
-                        expanded = locationExpanded,
-                        onDismissRequest = { locationExpanded = false }
-                    ) {
-                        locationsFromJson.forEach { option ->
-                            DropdownMenuItem(
-                                text = { Text(option) },
-                                onClick = {
-                                    location = option
-                                    building = ""
-                                    locationExpanded = false
-                                }
-                            )
+                        selectedDate?.let {
+                            Spacer(Modifier.height(6.dp))
+                            Text(it, maxLines = 1, overflow = TextOverflow.Ellipsis)
                         }
                     }
-                }
 
-                val buildingEnabled = location.isNotBlank() && buildingsFromJson.isNotEmpty()
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Icon(
+                            imageVector = Icons.Outlined.AccessTime,
+                            contentDescription = "Pick start and end time",
+                            tint = AppGreen,
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clickable {
+                                    val cal = Calendar.getInstance()
 
-                ExposedDropdownMenuBox(
-                    expanded = buildingExpanded,
-                    onExpandedChange = {
-                        if (buildingEnabled) buildingExpanded = !buildingExpanded
-                    },
-                    modifier = Modifier.weight(1f)
-                ) {
-                    OutlinedTextField(
-                        value = building,
-                        onValueChange = {},
-                        readOnly = true,
-                        enabled = buildingEnabled,
-                        placeholder = { Text("Select building") },
-                        trailingIcon = {
-                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = buildingExpanded)
-                        },
-                        shape = outlineShape,
-                        colors = textFieldColors,
-                        modifier = Modifier
-                            .menuAnchor()
-                            .fillMaxWidth()
-                            .border(2.dp, AppGreen, outlineShape)
-                    )
+                                    TimePickerDialog(
+                                        context,
+                                        { _, startH, startM ->
+                                            TimePickerDialog(
+                                                context,
+                                                { _, endH, endM ->
+                                                    val startStr =
+                                                        String.format("%02d:%02d", startH, startM)
+                                                    val endStr =
+                                                        String.format("%02d:%02d", endH, endM)
 
-                    ExposedDropdownMenu(
-                        expanded = buildingExpanded,
-                        onDismissRequest = { buildingExpanded = false }
-                    ) {
-                        buildingsFromJson.forEach { option ->
-                            DropdownMenuItem(
-                                text = { Text(option) },
-                                onClick = {
-                                    building = option
-                                    buildingExpanded = false
+                                                    val error =
+                                                        validateBookingTime(startStr, endStr)
+
+                                                    if (error != null) {
+                                                        Toast.makeText(
+                                                            context,
+                                                            error,
+                                                            Toast.LENGTH_SHORT
+                                                        ).show()
+                                                    } else {
+                                                        startTime = startStr
+                                                        endTime = endStr
+                                                    }
+                                                },
+                                                startH,
+                                                startM,
+                                                true
+                                            ).show()
+                                        },
+                                        cal.get(Calendar.HOUR_OF_DAY),
+                                        cal.get(Calendar.MINUTE),
+                                        true
+                                    ).show()
                                 }
+                        )
+
+                        if (startTime == null || endTime == null) {
+                            Text(
+                                text = "XX:XX-XX:XX",
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    fontFamily = AlatsiFont,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.Black
+                                )
                             )
+                        }
+
+                        if (startTime != null && endTime != null) {
+                            Spacer(Modifier.height(6.dp))
+                            Text("$startTime - $endTime")
                         }
                     }
                 }
             }
-        }
 
-        item {
-            if (extrasFromJson.isNotEmpty()) {
-                Text(
-                    "Extra",
-                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Black)
-                )
-            }
-        }
-
-        item {
-            if (extrasFromJson.isNotEmpty()) {
+            item {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    extrasFromJson.forEach { extra ->
-                        BookingExtraChip(
-                            text = extra.label,
-                            selected = extra.key in selectedExtras,
-                            onClick = {
-                                selectedExtras =
-                                    if (extra.key in selectedExtras) selectedExtras - extra.key
-                                    else selectedExtras + extra.key
+                    ExposedDropdownMenuBox(
+                        expanded = peopleExpanded,
+                        onExpandedChange = { peopleExpanded = it },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        OutlinedTextField(
+                            value = peopleQuery,
+                            onValueChange = {
+                                peopleQuery = it
+                                peopleExpanded = true
+                            },
+                            textStyle = LocalTextStyle.current.copy(fontFamily = AlatsiFont),
+                            placeholder = {
+                                Text(
+                                    "Search for people...",
+                                    fontFamily = AlatsiFont,
+                                    color = TextFieldGrey
+                                )
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Default.Search,
+                                    contentDescription = "Search",
+                                    tint = TextFieldGrey
+                                )
+                            },
+                            singleLine = true,
+                            shape = RoundedCornerShape(14.dp),
+                            modifier = Modifier
+                                .menuAnchor()
+                                .fillMaxWidth()
+                                .border(2.dp, AppGreen, RoundedCornerShape(14.dp))
+                                .onFocusChanged { if (it.isFocused) peopleExpanded = true },
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = AppGreen,
+                                unfocusedBorderColor = AppGreen,
+                                focusedContainerColor = Color(0xFFD9D9D9).copy(alpha = 0.3f),
+                                unfocusedContainerColor = Color(0xFFD9D9D9).copy(alpha = 0.3f)
+                            )
+                        )
+
+                        ExposedDropdownMenu(
+                            expanded = peopleExpanded,
+                            onDismissRequest = { peopleExpanded = false }
+                        ) {
+                            when {
+                                loadingUsers -> {
+                                    DropdownMenuItem(
+                                        text = { Text("Loading...", fontFamily = AlatsiFont) },
+                                        onClick = {}
+                                    )
+                                }
+
+                                candidatePeople.isEmpty() -> {
+                                    DropdownMenuItem(
+                                        text = { Text("No users found", fontFamily = AlatsiFont) },
+                                        onClick = {}
+                                    )
+                                }
+
+                                else -> {
+                                    candidatePeople.forEach { user ->
+                                        val isFriend = userViewModel.isFriend(user.id)
+                                        DropdownMenuItem(
+                                            text = {
+                                                PersonDropdownRow(
+                                                    user = user,
+                                                    isFriend = isFriend
+                                                )
+                                            },
+                                            onClick = {
+                                                if (selectedPeople.none { it.id == user.id }) {
+                                                    selectedPeople.add(user)
+                                                }
+                                                excludedGroupMemberIds.remove(user.id)
+                                                peopleQuery = ""
+                                                peopleExpanded = true
+                                            }
+                                        )
+                                    }
+                                }
                             }
-                        )
+                        }
                     }
-                }
-            }
-        }
 
-        item {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center
-            ) {
-                Button(
-                    onClick = {
-                        val error = validateBookingInputs(
-                            selectedDate,
-                            startTime,
-                            endTime,
-                            location,
-                            building
+                    Box(
+                        modifier = Modifier.wrapContentSize(Alignment.Center)
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.groups),
+                            contentDescription = "Select groups",
+                            tint = Color.Black,
+                            modifier = Modifier
+                                .size(40.dp)
+                                .align(Alignment.Center)
+                                .clickable { groupExpanded = true }
                         )
 
-                        if (error != null) {
-                            Toast.makeText(context, error, Toast.LENGTH_SHORT).show()
-                            return@Button
-                        }
-                        val all = roomsViewModel.allRooms.value
-                        val requiredSeats = 1 + invitedUserIds.size
-                        val wantedLocation = location.trim()
-                        val wantedBuilding = building.trim()
-                        val selectedExtraOptions = extrasFromJson.filter { it.key in selectedExtras }
+                        DropdownMenu(
+                            expanded = groupExpanded,
+                            onDismissRequest = { groupExpanded = false }
+                        ) {
+                            groups.forEach { group ->
+                                val isSelected = selectedGroups.any { it.id == group.id }
 
-                        filteredRooms = all.filter { r ->
-                            val locationOk = r.location.trim().equals(wantedLocation, ignoreCase = true)
-                            val buildingOk = r.buildingDisplay().equals(wantedBuilding, ignoreCase = true)
-                            val seatsOk = r.seats >= requiredSeats
-                            val extrasOk = selectedExtraOptions.all { opt -> opt.isInRoom(r) }
+                                DropdownMenuItem(
+                                    text = {
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.SpaceBetween
+                                        ) {
+                                            Text(
+                                                text = group.name,
+                                                fontFamily = AlatsiFont
+                                            )
 
-                            locationOk && buildingOk && seatsOk && extrasOk
-                        }
-
-                        searchedOnce = true
-
-                        if (filteredRooms.isEmpty()) {
-                            Toast.makeText(
-                                context,
-                                "No rooms match your filters",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }
-                    },
-                    colors = buttonColors,
-                    shape = RoundedCornerShape(14.dp),
-                    modifier = Modifier.height(44.dp),
-                    enabled = location.isNotBlank() && building.isNotBlank() && canBook
-                ) {
-                    Text(
-                        "Find room",
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-                    )
-                }
-            }
-        }
-
-        if (searchedOnce) {
-            val bookingsToday = bookingViewModel.bookingsForSelectedDate.value
-
-            val availableRooms = filteredRooms.filter { room ->
-                if (selectedDate == null || startTime == null || endTime == null) {
-                    true
-                } else {
-                    bookingsToday.none { b ->
-                        b.roomId == room.id &&
-                                b.date == selectedDate &&
-                                overlaps(startTime!!, endTime!!, b.startTime, b.endTime)
-                    }
-                }
-            }
-
-            if (availableRooms.isEmpty()) {
-                item {
-                    Text(
-                        text = "No available rooms for that time",
-                        style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.padding(top = 12.dp)
-                    )
-                }
-            } else {
-                items(
-                    availableRooms,
-                    key = { room -> room.id }
-                ) { room ->
-                    val model = BookingCardUiModel(
-                        roomDbId = room.id,
-                        roomName = room.name,
-                        building = "${room.buildingDisplay()}, ${room.location.trim()}",
-                        dateText = selectedDate ?: "",
-                        timeText = "${startTime ?: ""}-${endTime ?: ""}",
-                        seatsText = "${room.seats} seats",
-                        hasMonitor = room.has_monitor,
-                        hasWhiteboard = room.has_whiteboard,
-                        isAccessible = room.is_accessible
-                    )
-
-                    BookingCard(
-                        model = model,
-                        borderColor = AppGreen,
-                        canBook = canBook,
-                        onBook = {
-                            val bookingUserId = userViewModel.currentUser.value?.id
-                            if (bookingUserId != null) {
-                                bookingViewModel.createBooking(
-                                    currentUserId = bookingUserId,
-                                    roomId = room.id,
-                                    date = selectedDate!!,
-                                    startTime = startTime!!,
-                                    endTime = endTime!!,
-                                    selectedOtherUserIds = invitedUserIds,
-                                    onSuccess = {
-                                        Toast.makeText(context, "Booked!", Toast.LENGTH_SHORT).show()
-                                        bookingViewModel.fetchBookingsForDate(selectedDate!!)
+                                            if (isSelected) {
+                                                Icon(
+                                                    imageVector = Icons.Default.Star,
+                                                    contentDescription = "Selected",
+                                                    tint = AppGreen,
+                                                    modifier = Modifier.size(18.dp)
+                                                )
+                                            }
+                                        }
                                     },
-                                    onError = { msg ->
-                                        Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
-                                        bookingViewModel.fetchBookingsForDate(selectedDate!!)
+                                    onClick = {
+                                        if (isSelected) {
+                                            selectedGroups.removeAll { it.id == group.id }
+                                        } else {
+                                            selectedGroups.add(group)
+                                        }
                                     }
                                 )
                             }
-                        },
-                        onMissingDateTime = {
-                            Toast.makeText(
-                                context,
-                                "Please select date and time first",
-                                Toast.LENGTH_SHORT
-                            ).show()
                         }
+                    }
+                }
+            }
+
+            item {
+                LazyRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    contentPadding = PaddingValues(horizontal = 4.dp)
+                ) {
+                    items(invitedUsers, key = { it.id }) { person ->
+                        BookingPersonItemUser(
+                            user = person,
+                            onRemove = {
+                                selectedPeople.removeAll { it.id == person.id }
+                                if (selectedGroups.any { group -> person.id in group.memberIds }) {
+                                    if (person.id !in excludedGroupMemberIds) {
+                                        excludedGroupMemberIds.add(person.id)
+                                    }
+                                }
+                            },
+                            removable = true
+                        )
+                    }
+                }
+            }
+
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        "Location",
+                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Black)
                     )
+                    Text(
+                        "Building",
+                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Black)
+                    )
+                }
+            }
+
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(14.dp)
+                ) {
+                    ExposedDropdownMenuBox(
+                        expanded = locationExpanded,
+                        onExpandedChange = { locationExpanded = !locationExpanded },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        OutlinedTextField(
+                            value = location,
+                            onValueChange = {},
+                            readOnly = true,
+                            enabled = locationsFromJson.isNotEmpty(),
+                            placeholder = { Text("Select location") },
+                            trailingIcon = {
+                                ExposedDropdownMenuDefaults.TrailingIcon(expanded = locationExpanded)
+                            },
+                            shape = outlineShape,
+                            colors = textFieldColors,
+                            modifier = Modifier
+                                .menuAnchor()
+                                .fillMaxWidth()
+                                .border(2.dp, AppGreen, outlineShape)
+                        )
+
+                        ExposedDropdownMenu(
+                            expanded = locationExpanded,
+                            onDismissRequest = { locationExpanded = false }
+                        ) {
+                            locationsFromJson.forEach { option ->
+                                DropdownMenuItem(
+                                    text = { Text(option) },
+                                    onClick = {
+                                        location = option
+                                        building = ""
+                                        locationExpanded = false
+                                    }
+                                )
+                            }
+                        }
+                    }
+
+                    val buildingEnabled = location.isNotBlank() && buildingsFromJson.isNotEmpty()
+
+                    ExposedDropdownMenuBox(
+                        expanded = buildingExpanded,
+                        onExpandedChange = {
+                            if (buildingEnabled) buildingExpanded = !buildingExpanded
+                        },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        OutlinedTextField(
+                            value = building,
+                            onValueChange = {},
+                            readOnly = true,
+                            enabled = buildingEnabled,
+                            placeholder = { Text("Select building") },
+                            trailingIcon = {
+                                ExposedDropdownMenuDefaults.TrailingIcon(expanded = buildingExpanded)
+                            },
+                            shape = outlineShape,
+                            colors = textFieldColors,
+                            modifier = Modifier
+                                .menuAnchor()
+                                .fillMaxWidth()
+                                .border(2.dp, AppGreen, outlineShape)
+                        )
+
+                        ExposedDropdownMenu(
+                            expanded = buildingExpanded,
+                            onDismissRequest = { buildingExpanded = false }
+                        ) {
+                            buildingsFromJson.forEach { option ->
+                                DropdownMenuItem(
+                                    text = { Text(option) },
+                                    onClick = {
+                                        building = option
+                                        buildingExpanded = false
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            item {
+                if (extrasFromJson.isNotEmpty()) {
+                    Text(
+                        "Extra",
+                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Black)
+                    )
+                }
+            }
+
+            item {
+                if (extrasFromJson.isNotEmpty()) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        extrasFromJson.forEach { extra ->
+                            BookingExtraChip(
+                                text = extra.label,
+                                selected = extra.key in selectedExtras,
+                                onClick = {
+                                    selectedExtras =
+                                        if (extra.key in selectedExtras) selectedExtras - extra.key
+                                        else selectedExtras + extra.key
+                                }
+                            )
+                        }
+                    }
+                }
+            }
+
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Button(
+                        onClick = {
+                            val error = validateBookingInputs(
+                                selectedDate,
+                                startTime,
+                                endTime,
+                                location,
+                                building
+                            )
+
+                            if (error != null) {
+                                Toast.makeText(context, error, Toast.LENGTH_SHORT).show()
+                                return@Button
+                            }
+                            val all = roomsViewModel.allRooms.value
+                            val requiredSeats = 1 + invitedUserIds.size
+                            val wantedLocation = location.trim()
+                            val wantedBuilding = building.trim()
+                            val selectedExtraOptions =
+                                extrasFromJson.filter { it.key in selectedExtras }
+
+                            filteredRooms = all.filter { r ->
+                                val locationOk =
+                                    r.location.trim().equals(wantedLocation, ignoreCase = true)
+                                val buildingOk =
+                                    r.buildingDisplay().equals(wantedBuilding, ignoreCase = true)
+                                val seatsOk = r.seats >= requiredSeats
+                                val extrasOk = selectedExtraOptions.all { opt -> opt.isInRoom(r) }
+
+                                locationOk && buildingOk && seatsOk && extrasOk
+                            }
+
+                            searchedOnce = true
+
+                            if (filteredRooms.isEmpty()) {
+                                Toast.makeText(
+                                    context,
+                                    "No rooms match your filters",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        },
+                        colors = buttonColors,
+                        shape = RoundedCornerShape(14.dp),
+                        modifier = Modifier.height(44.dp),
+                        enabled = location.isNotBlank() && building.isNotBlank() && canBook
+                    ) {
+                        Text(
+                            "Find room",
+                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                        )
+                    }
+                }
+            }
+
+            if (searchedOnce) {
+                val bookingsToday = bookingViewModel.bookingsForSelectedDate.value
+
+                val availableRooms = filteredRooms.filter { room ->
+                    if (selectedDate == null || startTime == null || endTime == null) {
+                        true
+                    } else {
+                        bookingsToday.none { b ->
+                            b.roomId == room.id &&
+                                    b.date == selectedDate &&
+                                    overlaps(startTime!!, endTime!!, b.startTime, b.endTime)
+                        }
+                    }
+                }
+
+                if (availableRooms.isEmpty()) {
+                    item {
+                        Text(
+                            text = "No available rooms for that time",
+                            style = MaterialTheme.typography.titleMedium,
+                            modifier = Modifier.padding(top = 12.dp)
+                        )
+                    }
+                } else {
+                    items(
+                        availableRooms,
+                        key = { room -> room.id }
+                    ) { room ->
+                        val model = BookingCardUiModel(
+                            roomDbId = room.id,
+                            roomName = room.name,
+                            building = "${room.buildingDisplay()}, ${room.location.trim()}",
+                            dateText = selectedDate ?: "",
+                            timeText = "${startTime ?: ""}-${endTime ?: ""}",
+                            seatsText = "${room.seats} seats",
+                            hasMonitor = room.has_monitor,
+                            hasWhiteboard = room.has_whiteboard,
+                            isAccessible = room.is_accessible
+                        )
+
+                        BookingCard(
+                            model = model,
+                            borderColor = AppGreen,
+                            canBook = canBook,
+                            onBook = {
+                                val bookingUserId = userViewModel.currentUser.value?.id
+                                if (bookingUserId != null) {
+                                    bookingViewModel.createBooking(
+                                        currentUserId = bookingUserId,
+                                        roomId = room.id,
+                                        date = selectedDate!!,
+                                        startTime = startTime!!,
+                                        endTime = endTime!!,
+                                        selectedOtherUserIds = invitedUserIds,
+                                        onSuccess = {
+                                            Toast.makeText(context, "Booked!", Toast.LENGTH_SHORT)
+                                                .show()
+                                            bookingViewModel.fetchBookingsForDate(selectedDate!!)
+                                        },
+                                        onError = { msg ->
+                                            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                                            bookingViewModel.fetchBookingsForDate(selectedDate!!)
+                                        }
+                                    )
+                                }
+                            },
+                            onMissingDateTime = {
+                                Toast.makeText(
+                                    context,
+                                    "Please select date and time first",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        )
+                    }
                 }
             }
         }

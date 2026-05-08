@@ -392,7 +392,7 @@ private fun ProfileSwitcher(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 TabText(
-                    text = "Your friends",
+                    text = "Your favorites",
                     selected = selectedTab == ProfileTab.FRIENDS,
                     onClick = onFriendsSelected
                 )
@@ -477,7 +477,7 @@ fun FriendsBox(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "No friends yet. Tap the search icon to add some!",
+                    text = "No favorites yet. Tap the search icon to add some!",
                     style = MaterialTheme.typography.bodyMedium.copy(fontFamily = AlatsiFont),
                     color = Color.DarkGray,
                     modifier = Modifier.padding(16.dp)

@@ -35,6 +35,7 @@ import java.util.Locale
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.clickable
 
 @Composable
 fun SearchPeoplePage(
@@ -193,6 +194,7 @@ private fun UserSearchItem(
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .clickable { onToggleFriend() }
             .padding(vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -236,14 +238,11 @@ private fun UserSearchItem(
                 color = Color.DarkGray
             )
         }
-
-        IconButton(onClick = onToggleFriend) {
-            Icon(
-                imageVector = if (isFriend) Icons.Default.Star else Icons.Outlined.StarOutline,
-                contentDescription = "Friend",
-                tint = AppGreen,
-                modifier = Modifier.size(30.dp)
-            )
-        }
+        Icon(
+            imageVector = if (isFriend) Icons.Default.Star else Icons.Outlined.StarOutline,
+            contentDescription = "Friend",
+            tint = AppGreen,
+            modifier = Modifier.size(30.dp)
+        )
     }
 }

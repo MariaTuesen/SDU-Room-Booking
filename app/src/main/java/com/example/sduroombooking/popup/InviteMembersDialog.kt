@@ -57,7 +57,7 @@ fun InviteMembersDialog(
             Column {
                 if (users.isEmpty()) {
                     Text(
-                        text = "No friends available to invite",
+                        text = "No favorites available to invite",
                         fontFamily = AlatsiFont
                     )
                 } else {
