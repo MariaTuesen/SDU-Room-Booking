@@ -160,13 +160,15 @@ private fun NotificationRow(
                 )
             }
 
-            IconButton(onClick = onDeleteClick) {
-                Icon(
-                    painter = painterResource(R.drawable.bin),
-                    contentDescription = "Delete notification",
-                    tint = Color.Black,
-                    modifier = Modifier.size(25.dp)
-                )
+            if (notification.type != "group_invite") {
+                IconButton(onClick = onDeleteClick) {
+                    Icon(
+                        painter = painterResource(R.drawable.bin),
+                        contentDescription = "Delete notification",
+                        tint = Color.Black,
+                        modifier = Modifier.size(25.dp)
+                    )
+                }
             }
         }
         if (notification.type == "group_invite" && !notification.read) {

@@ -60,6 +60,8 @@ import com.example.sduroombooking.R
 import com.example.sduroombooking.dataclasses.Booking
 import com.example.sduroombooking.dataclasses.User
 import com.example.sduroombooking.ui.theme.AppGreen
+import com.example.sduroombooking.ui.theme.CancelRed
+import com.example.sduroombooking.ui.theme.ReportYellow
 import com.example.sduroombooking.ui.theme.TextFieldGrey
 import com.example.sduroombooking.viewmodel.BookingViewModel
 import com.example.sduroombooking.viewmodel.UserViewModel
@@ -87,7 +89,7 @@ fun EditBookingPopUp(
 
     )
 {
-    val context = androidx.compose.ui.platform.LocalContext.current
+    val context = LocalContext.current
 
     var peopleQuery by remember { mutableStateOf("") }
     var peopleExpanded by remember { mutableStateOf(false) }
@@ -95,6 +97,8 @@ fun EditBookingPopUp(
     var showReportIssue by remember { mutableStateOf(false) }
 
     val allUsers = userVM.allUsers.value
+    val myId = userVM.currentUser.value?.id ?: ""
+
     val participants by remember(booking.id, bookingVM.currentUserBookings.value, allUsers) {
         derivedStateOf {
             val freshBooking = bookingVM.currentUserBookings.value.find { it.id == booking.id }
@@ -346,20 +350,12 @@ fun EditBookingPopUp(
                             items(participants) { user ->
                                 ParticipantItem(
                                     user = user,
+                                    isCurrentUser = user.id == myId,
                                     onRemove = {
                                         val newList = booking.userIds.filter { it != user.id }
-                                        val myId = userVM.currentUser.value?.id ?: ""
-
-                                        bookingVM.updateBookingParticipants(
-                                            booking = booking,
-                                            newUserIds = newList,
-                                            currentUserId = myId,
-                                            onSuccess = {
-                                                if (user.id == myId) {
-                                                    onDismiss()
-                                                }
-                                            }
-                                        )
+                                        bookingVM.updateBookingParticipants(booking, newList, myId) {
+                                            if (user.id == myId) onDismiss()
+                                        }
                                     }
                                 )
                             }
@@ -375,13 +371,13 @@ fun EditBookingPopUp(
                     ) {
                         StatusButton(
                             text = "Report issue",
-                            color = Color.Yellow,
+                            color = ReportYellow,
                             onClick = { showReportIssue = true }
                         )
 
                         StatusButton(
                             text = "Cancel booking",
-                            color = Color.Red,
+                            color = CancelRed,
                             onClick = { showConfirmDelete = true }
                         )
                     }
@@ -398,17 +394,11 @@ fun EditBookingPopUp(
             {
                 ConfirmDeletePopUp(
                     onConfirm = {
-                        val myId = userVM.currentUser.value?.id ?: ""
-
-                        bookingVM.deleteBooking(
-                            booking.id,
-                            onSuccess = {
-                                bookingVM.fetchUserBookings(myId)
-                                showConfirmDelete = false
-                                onDismiss()
-                            },
-                            onError = {}
-                        )
+                        bookingVM.deleteBooking(booking.id, {
+                            bookingVM.fetchUserBookings(myId)
+                            showConfirmDelete = false
+                            onDismiss()
+                        }, {})
                     },
                     onDismiss = { showConfirmDelete = false }
                 )
@@ -442,9 +432,14 @@ fun EditBookingPopUp(
 
 
 @Composable
-fun ParticipantItem(user: User, onRemove: () -> Unit)
+fun ParticipantItem(
+    user: User,
+    isCurrentUser: Boolean,
+    onRemove: () -> Unit
+)
 {
     var showConfirmDeleteParticipant by remember { mutableStateOf(false) }
+    var showConfirmLeave by remember { mutableStateOf(false) }
 
     val baseUrl = "http://10.0.2.2:3000"
 
@@ -480,11 +475,17 @@ fun ParticipantItem(user: User, onRemove: () -> Unit)
             Text(text = user.email, fontSize = 11.sp, color = Color.Gray)
         }
 
-        IconButton(onClick = {  showConfirmDeleteParticipant = true}) {
-            Icon(
-                painter = painterResource(R.drawable.bin),
-                contentDescription = "Remove",
-                modifier = Modifier.size(20.dp))
+        if (isCurrentUser)
+        {
+             IconButton(onClick = {showConfirmLeave = true})
+             {
+                 Icon(painterResource(R.drawable.leave), null, modifier = Modifier.size(20.dp))
+             }
+        } else{
+            IconButton(onClick = {showConfirmDeleteParticipant = true})
+            {
+                Icon(painterResource(R.drawable.bin), null, modifier = Modifier.size(20.dp))
+            }
         }
     }
 
@@ -507,15 +508,33 @@ fun ParticipantItem(user: User, onRemove: () -> Unit)
         }
     }
 
+    if (showConfirmLeave) {
+        Dialog(
+            onDismissRequest = {showConfirmLeave = false},
+            properties = DialogProperties(
+                usePlatformDefaultWidth = false)
+            )
+        {
+            ConfirmLeavePopUp(
+                userName = user.fullName,
+                onConfirm = {
+                    onRemove()
+                    showConfirmLeave = false
+                },
+                onDismiss = {showConfirmLeave = false}
+            )
+        }
+    }
+
+
 }
 
 @Composable
 fun StatusButton(text: String, color: Color, onClick: () -> Unit)
 {
     Surface(
+        color = color,
         shape = RoundedCornerShape(8.dp),
-        border = BorderStroke(1.5.dp, color),
-        color = TextFieldGrey,
         modifier = Modifier.clickable {onClick()}
     )
     {

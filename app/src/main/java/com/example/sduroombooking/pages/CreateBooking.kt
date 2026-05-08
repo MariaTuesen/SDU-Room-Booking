@@ -248,7 +248,9 @@ fun CreateBooking(
 
     val buttonColors = ButtonDefaults.buttonColors(
         containerColor = AppGreen,
-        contentColor = Color.White
+        contentColor = Color.Black,
+        disabledContainerColor = TextFieldGrey,
+        disabledContentColor = Color.White
     )
 
     LazyColumn(
@@ -810,7 +812,7 @@ private fun BookingExtraChip(
         onClick = onClick,
         shape = RoundedCornerShape(20.dp),
         color = if (selected) AppGreen else Color.Transparent,
-        contentColor = if (selected) Color.White else AppGreen,
+        contentColor = if (selected) Color.Black else AppGreen,
         border = BorderStroke(2.5.dp, AppGreen)
     ) {
         Text(
