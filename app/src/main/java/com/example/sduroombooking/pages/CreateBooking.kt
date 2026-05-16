@@ -323,7 +323,7 @@ fun CreateBooking(
 
                         if (selectedDate == null) {
                             Text(
-                                text = "XX/XX/XXXX",
+                                text = "Pick date",
                                 style = MaterialTheme.typography.bodySmall.copy(
                                     fontFamily = AlatsiFont,
                                     fontWeight = FontWeight.Bold,
@@ -387,7 +387,7 @@ fun CreateBooking(
 
                         if (startTime == null || endTime == null) {
                             Text(
-                                text = "XX:XX-XX:XX",
+                                text = "Pick time",
                                 style = MaterialTheme.typography.bodySmall.copy(
                                     fontFamily = AlatsiFont,
                                     fontWeight = FontWeight.Bold,
@@ -998,7 +998,7 @@ private fun BookingPersonItemUser(
                 Icon(
                     painter = painterResource(R.drawable.bin),
                     contentDescription = "Remove",
-                    tint = AppGreen,
+                    tint = Color.Black,
                     modifier = Modifier.size(20.dp)
                 )
             }

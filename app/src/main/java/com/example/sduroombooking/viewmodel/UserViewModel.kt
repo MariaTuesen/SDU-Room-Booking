@@ -191,35 +191,4 @@ class UserViewModel : ViewModel() {
             }
         }
     }
-
-    fun searchUsers(
-        query: String,
-        users: List<User>,
-        currentUserId: String?,
-        excludeIds: Set<String> = emptySet(),
-        friendFirst: Boolean = false
-    ): List<User> {
-        val q = query.trim().lowercase()
-
-        fun User.matchesQuery(): Boolean {
-            if (q.isBlank()) return true
-            return fullName.lowercase().contains(q) || email.lowercase().contains(q)
-        }
-
-        val base = users
-            .asSequence()
-            .filter { it.id != currentUserId }
-            .filter { it.id !in excludeIds }
-            .filter { it.matchesQuery() }
-            .toList()
-
-        return if (!friendFirst) {
-            base
-        } else {
-            base.sortedWith(
-                compareByDescending<User> { isFriend(it.id) }
-                    .thenBy { it.fullName.lowercase() }
-            )
-        }
-    }
 }

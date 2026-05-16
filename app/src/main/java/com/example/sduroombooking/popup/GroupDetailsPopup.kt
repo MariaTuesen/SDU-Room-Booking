@@ -196,7 +196,8 @@ fun GroupDetailsPopup(
             title = {
                 Text(
                     text = "Leave group?",
-                    fontFamily = AlatsiFont
+                    fontFamily = AlatsiFont,
+                    color = Color.Black
                 )
             },
             text = {

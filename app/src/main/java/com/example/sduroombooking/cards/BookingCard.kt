@@ -138,7 +138,7 @@ fun BookingCard(
                                 onClick = {},
                                 label = {
                                     Text(
-                                        "TV screen",
+                                        "Monitor",
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis
                                     )
